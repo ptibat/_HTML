@@ -1,0 +1,699 @@
+<?php
+
+/** --------------------------------------------------------------------------------------------------------------------------------------------
+* Contact		: @ptibat
+* Dev start		: 18/02/2013
+* Last modif	: 15/04/2019 17:30
+* Description	: Classe de gestion de base de données SQL // PDO
+--------------------------------------------------------------------------------------------------------------------------------------------- */
+
+class database {
+
+/*
+	FONCTIONS :
+
+	csv( $query , $options = array() )
+	database_connect()
+	database_disconnect()
+	debug( $return = null )
+	delete( $query )
+	enum_values( $table , $field )
+	get( $query )
+	get_array( $query , $table=false )
+	get_colonnes( $table )
+	insert( $query )
+	last_error()
+	pagination( $query , $nb_results_par_page , $nav_link , $current , $id="pagination" , $class="pagination" )
+	protect( $string )
+	query( $query , $num=false )
+	query_exec( $query )
+	row( $query , $num=false )
+	sql_data( $sql_data )
+	update( $query )
+	version( $min=null )
+*/
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- VARIABLES */
+
+	public $pdo			= null;
+	public $options		= array();
+	public $current_query	= "";
+	public $last_error		= array( "time" => "" , "error" => "" );
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CONSTRUCTEUR */
+public function __construct( $options = array() )
+  {
+	$default = array( 
+		"driver"		=> "mysql",
+		"host"		=> "localhost",
+		"file"			=> "",			/* Pour fichier sqlite */
+		"port"		=> 3306,
+		"database"		=> "",
+		"user" 		=> null,
+		"password"		=> null,
+		"charset"		=> "utf8",
+		"persistant"	=> true
+	);
+
+	$options = is_array($options) ? array_merge( $default , $options ) : $default;
+
+
+	$strrpos = strrpos( $options["host"] , ":" );
+	if( $strrpos > 4  )
+	  {
+		$explode 		= print_r( explode( ":" , preg_replace( "#http(s?)://#" , "" , $options["host"] ) ) );
+		$this->port		= $explode[1];
+	  }
+
+	$this->options = $options;
+	$this->database_connect();
+  }
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOYE UNE ERREUR LORS DE L'EXECUTION D'UNE FONCTION INEXISTANTE */
+public function __call( $function , $arguments )
+  {
+	echo __CLASS__." : La fonction appelée \"".$function."\" est inexistante. ".json_encode( $arguments );
+	exit;
+  }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CONNEXION A LA BASE DE DONNEES */
+private function database_connect()
+  {
+	try
+	  {
+		if( ( $this->options["driver"] == "sqlite" ) AND !empty($this->options["file"]) )
+		  {
+		  	if( !is_file($this->options["file"]) )
+		  	  {
+		  	  	echo "ERROR DB FILE";
+		  	  	exit;
+		  	  }
+			else
+			  {
+				$this->pdo = new PDO(
+						$this->options["driver"].":".$this->options["file"],
+						$this->options["user"],
+						$this->options["password"],
+						array(
+							PDO::ATTR_PERSISTENT 		=> $this->options["persistant"],
+							PDO::MYSQL_ATTR_FOUND_ROWS 	=> true
+						)
+				);
+			  }
+		  }
+		else
+		  {
+			$this->pdo = new PDO(
+					$this->options["driver"]
+									.( !empty($this->options["host"]) ? ":host=".$this->options["host"] : "" )
+									.( !empty($this->options["database"]) ? ";dbname=".$this->options["database"] : "" ),
+					
+					$this->options["user"],
+					$this->options["password"],
+					array(
+						PDO::ATTR_PERSISTENT 		=> $this->options["persistant"],
+						PDO::MYSQL_ATTR_FOUND_ROWS 	=> true
+					)
+			);
+
+		  }
+
+		if( isset($this->options["charset"]) AND !empty($this->options["charset"]) )
+		  {
+			$this->pdo->exec("set names ".$this->options["charset"] );
+		  }
+
+		return true;
+
+	  }
+	catch( PDOException $e )
+	  {
+		global $_HTML;
+	  
+		if( isset($_HTML["administrator"]) AND functions::check_email($_HTML["administrator"]) )
+		  {
+			$error  = "\nErreur de connexion au serveur de bases de données";
+			$error .= "\n----------------------------------------------------------";
+			$error .= "\n";
+			$error .= "\nDATE :       ".date( "d/m/Y H:i:s" );
+			$error .= "\nMicrotime :  ".microtime();
+			$error .= "\nURL :        http".(  ( isset($_SERVER["HTTPS"]) AND ( $_SERVER["HTTPS"] === "on" ) ) ? "s" : "" )."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"];
+			$error .= "\nDRIVER :     ".$this->options["driver"];
+			$error .= "\nUSER :  	  ".str_pad( "" , strlen( $this->options["user"] ) , "*" ).substr( $this->options["user"] , -3 );
+			$error .= "\nPASSWORD :   ".str_pad( "" , strlen( $this->options["password"] ) , "*" ).substr( $this->options["password"] , -3 );
+			$error .= "\nHOST :       ".$this->options["host"];
+			$error .= "\nDATABASE :   ".$this->options["database"];
+			$error .= "\nERROR :      \n\n".$e->getMessage();
+			$error .= "\n";
+			
+			error_log( $error , 1 , $_HTML["administrator"] );
+		  }
+
+		if( $_HTML["dev"] == true )
+		  {
+			echo "<html><body style='margin:0;padding:20px 20px 40px 20px;font-family:monospace;font-size:14px;color:#9b1515;background-color:#F7EDED'><b>Erreur serveur</b><br />".$e->getMessage()."</body></html>";
+		  }
+		else
+		  {
+	  		echo "E.";
+		  	/*
+		  		$_HTML["errors"][] = "Erreur serveur : ".$e->getMessage();
+				return false;
+		  	*/
+		  }
+
+		exit;
+
+	  }
+
+  }
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- DECONNEXION DE LA BASE DE DONNEES */
+private function database_disconnect()
+  {
+	$this->pdo = null;
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RENSEIGNE LA DERNIÈRE ERREUR */
+public function last_error()
+  {
+  	$this->last_error["time"]	= functions::microtime();
+  	$this->last_error["error"]	= $this->pdo->errorInfo()[2];
+  	return $this->last_error;
+  }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- EXECUTE UNE REQUETE ET RENVOI LES RESULTATS DANS UN TABLEAU PHP */
+public function query_exec( $query )
+  {
+  	if( $this->pdo !== null )
+  	  {
+	  	$this->current_query = $query;
+  		return $this->pdo->query( $query );
+  	  }
+	else
+	  {
+		return false;
+	  }
+  }
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- EXECUTE UNE REQUETE ET RENVOI LES RESULTATS DANS UN TABLEAU PHP */
+public function query( $query , $num=false )
+  {
+  	$data = array(
+  		"ok"	 	=> false,
+  		"nb" 		=> 0,
+  		"data" 	=> array(),
+  		"msg" 	=> "",
+  		"query" 	=> $query
+  	);
+
+  	$query = $this->query_exec( $query );
+
+	if( $query )
+	  {
+	  	$data["ok"]		= true;
+	  	$data["data"]	= $query->fetchAll( ( $num === true ) ? PDO::FETCH_NUM : PDO::FETCH_ASSOC );
+	  	$data["nb"]		= ( $this->options["driver"] == "sqlite" ) ? count( $data["data"] ) : $query->rowCount();
+	  }
+	else
+	  {
+	  	$error 		= $this->pdo->errorInfo();
+	  	$error 		= $error[2];
+
+	  	$data["msg"]	= "Erreur de requête : ".$error;
+	  }
+  	
+	return $data;
+  }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- EXECUTE UNE REQUETE ET RENVOI UNE SEULE LIGNE */
+public function row( $query , $num=false )
+  {
+  	$query = $this->query_exec( $query );
+
+	if( $query )
+	  {
+		$data = $query->fetch( ( $num === true ) ? PDO::FETCH_NUM : PDO::FETCH_ASSOC );
+	  }
+	else
+	  {
+	  	$data = "Erreur de requête : ".$this->last_error()["error"];
+	  }
+
+	return $data;
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- INSERTION DE DONNÉES DANS UNE TABLE */
+public function insert( $query )
+  {
+  	if( $this->query_exec( $query ) )
+  	  {
+  	  	$id = $this->pdo->lastInsertId();
+		return ( !empty($id) AND is_numeric($id) AND ( $id > 0 ) ) ? $id : true;
+  	  }
+	else
+	  {
+	  	$this->last_error();
+		return false;
+	  }
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- MISE A JOUR DE DONNÉES */
+public function update( $query )
+  {
+  	if( $q = $this->query_exec( $query ) )
+  	  {
+		return $q->rowCount();
+  	  }
+	else
+	  {
+	  	$this->last_error();
+		return false;
+	  }
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- SUPPRESSION DE LA BASE DE DONNÉES */
+public function delete( $query )
+  {
+  	if( $q = $this->query_exec( $query ) )
+  	  {
+		return $q->rowCount();
+  	  }
+	else
+	  {
+	  	$this->last_error();
+		return false;
+	  }
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LA VERSION DE MYSQL */
+public function version( $min=null )
+  {
+	return $this->row("select version() as v")["v"];
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOI UNE CHAÎNE DE CARACTÈRES PROTEGÉES POUR UNE REQUETE SQL */
+public function protect( $string )
+  {
+	return $this->pdo->quote( $string );
+  }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE UN RÉSULTAT UNIQUE */
+public function get( $query )
+  {
+  	$data		= "";
+  	$query	= $this->query_exec( $query );
+
+	if( $query )
+	  {
+		$data = $query->fetch( PDO::FETCH_NUM );
+		$data = isset($data[0]) ? $data[0] : "";
+	  }
+	else
+	  {
+	  	$error = $this->pdo->errorInfo();
+	  	$error = $error[2];
+
+	  	echo "Erreur de requête : ".$error;exit;
+	  }
+  	
+	return $data;
+  }
+
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES RESULTATS SOUS FORME DE TABLEAU */
+public function get_array( $query )
+  {
+	$return 		= array();
+	$query		= $this->query( $query );
+
+	if( $query["nb"] > 0 )
+	  {
+		foreach( $query["data"] as $row )
+		  {
+			$i = 0;
+			$ligne = array();
+			foreach( $row as $key => $value )
+			  {
+			  	/*
+				$i++; if( $i % 2 == 0 ){}
+				*/
+
+				$ligne[ $key ] = $value;
+
+			  }
+
+			$return[] = $ligne;
+		  }
+	  }
+
+	return $return;
+  }
+
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES COLONNES D'UNE TABLE */
+public function get_colonnes( $table )
+  {
+	$return = array();
+
+  	$query = $this->query_exec( "SHOW COLUMNS FROM ".$table );
+	$colonnes = $query->fetchAll( PDO::FETCH_ASSOC );
+
+	foreach( $colonnes as $colonne )
+	  {
+	  	$type		= $colonne["Type"];
+	  	$size		= "";
+		$null 	= ( $colonne["Null"] == "NO" ? false : true );
+
+		if( preg_match( "#([a-z]+)(\([0-9]+\))?#i" , $type , $matches ) AND ( count($matches) > 1 ) )
+		  {
+			$type	= $matches[1];
+			$size	= isset($matches[2]) ? preg_replace( "#(\(|\))#" , "" , $matches[2] ) : "";
+		  }
+
+	  	$return[ $colonne["Field"] ] = array(
+	  							"type"	=> $type,
+	  							"size"	=> $size,
+	  							"null"	=> $null,
+	  							"default"	=> $colonne["Default"],
+	  							"key"		=> $colonne["Key"],
+	  							"extra"	=> $colonne["Extra"]
+	  						 );
+	  }
+
+	return $return;
+  }
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES ERREURS */
+public function debug( $return = null )
+  {
+  	$infos = array(
+  				"query" 	=> $this->current_query,
+  				"error" 	=> ( $this->pdo->errorInfo()[0] > 0 ) ? true : false,
+  				"error_txt"	=> ( $this->pdo->errorInfo()[0] > 0 ) ? $this->pdo->errorInfo()[2] : ""
+  		   );
+
+	$html		= "";
+	$tpl_titre	= "<div style='padding:12px 20px;background:#E27A7A;color:#fff;white-space:pre-line;font-family:monospace;font-size:15px;'>{%DATA%}</div>";
+	$tpl_data	= "<div style='padding:20px;margin-bottom:40px;background:#FCF4F4;color:#AA1111;white-space:pre-wrap;font-family:monospace;font-size:13px;'>{%DATA%}</div>";
+	
+	if( $infos["error"] === true )
+	  {
+		$html .= str_replace( "{%DATA%}" , "ERREUR" , $tpl_titre );
+		$html .= str_replace( "{%DATA%}" , $infos["error_txt"] , $tpl_data );
+	  }
+
+	$html .= str_replace( "{%DATA%}" , "REQUÊTE" , $tpl_titre );
+	$html .= str_replace( "{%DATA%}" , $infos["query"] , $tpl_data );
+
+	if( is_array( $this->last_error ) AND isset($this->last_error["time"]) AND isset($this->last_error["error"]) AND !empty($this->last_error["error"]) )
+	  {
+		$html .= str_replace( "{%DATA%}" , "DERNIÈRE ERREUR ( ".$this->last_error["time"]." )" , $tpl_titre );
+		$html .= str_replace( "{%DATA%}" , $this->last_error["error"] , $tpl_data );
+	  }
+
+
+  	if( $return === 1 )
+  	  {
+		return $html;
+  	  }
+  	else if( $return === 2 )
+  	  {
+		return $infos;
+  	  }
+	else
+	  {
+		echo $html;
+		exit;
+	  }
+  }
+
+
+ 
+ 
+   
+/* --------------------------------------------------------------------------------------------------------------------------------------------- GENERE DES DONNEES AU FORMAT CSV */
+public function csv( $query , $options = array() )
+  {
+	/* -------------------------------------------------- */
+	
+	$default = array( 
+		"headers"		=> false,
+		"charset"		=> "UTF-8"
+	);
+
+	$options = is_array($options) ? array_merge( $default , $options ) : $default;
+
+	/* -------------------------------------------------- */
+
+  	$csv		= "";
+  	$query	= $this->query_exec( $query );
+	$nb		= $query->rowCount();
+
+	if( $query AND ( $nb > 0 ) )
+	  {
+		$csv	= fopen( "php://temp/maxmemory:". ( 5 * 1024 * 1024 ) , "r+" );
+	  	$data = $query->fetchAll( PDO::FETCH_ASSOC );
+	  	
+	  	
+	  	if( $options["headers"] === true )
+	  	  {
+			$colonnes = array_keys( (array) $data[0] );
+	  	  	fputcsv( $csv, $colonnes );
+	  	  }
+	  	else if( is_array($options["headers"]) )
+	  	  {
+		  	fputcsv( $csv, $options["headers"] );
+	  	  }
+
+
+	  	foreach( $data as $row )
+	  	  {
+	  	  	if( $options["charset"] != "UTF-8" )
+	  	  	  {
+				array_walk( $row , function ( &$value ) {
+
+					global $options;
+
+					$value = iconv( mb_detect_encoding( $value ) , $options["charset"] , $value );
+		
+				});
+	  	  	  }
+	  	  	
+	  	  	fputcsv( $csv, $row );
+	  	  }
+
+		rewind( $csv );
+		$csv = stream_get_contents( $csv );
+
+	  }
+	else
+	  {
+		$csv = "ERREUR CSV";
+	  }
+  	
+	return $csv;
+
+	/* -------------------------------------------------- */
+	
+  }
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- PAGINATION COMPATIBLE PDO */
+public function pagination( $query , $nb_results_par_page , $nav_link , $current , $id="pagination" , $class="pagination" )
+  {
+	$navigation			= "";
+	$current	 		= is_numeric($current) ? $current : 1;
+	$page				= ( $current - 1 ) * $nb_results_par_page;
+	$data				= $this->query( $query );
+	$nb_results			= $data["nb"];
+	$nb_pages			= floor( $nb_results / $nb_results_par_page );
+	if( ($nb_results % $nb_results_par_page) > 0 ) { $nb_pages++; }
+
+	if( $nb_pages > 1 )
+	  {
+		$navigation = "<div id='".$id."'>\n";
+
+		if( $current > 1 )
+		  {
+			$navigation   .= "<a id='".$class."_previous' class='".$class."_number' href='".str_replace( "{%PAGE%}" , ( $current-1 ), $nav_link )."'>&laquo;</a>";
+		  }
+
+		if( $nb_pages > 10 )
+		  {
+			if( $current > 5 )
+			  {
+				$add_first	= "<a class='".$class."_number".( ($current==1) ? " ".$class."_number_current" : "" )."' href='".str_replace( "{%PAGE%}" , "1" , $nav_link )."'>1</a> ... ";
+				if( ($current+5) > $nb_pages )
+				  {
+					$for_start	= $current - (9 - ($nb_pages - $current));
+					$for_end	= $nb_pages + 1;
+					$add_end	= "";
+				  }
+				else
+				  {
+					$for_start	= ( $current - 4 );
+					$for_end	= ( $current + 5 );
+					$add_end	= "... <a class='".$class."_number".( ($current==$nb_pages) ? " ".$class."_number_current" : "" )."' href='".str_replace( "{%PAGE%}" , $nb_pages , $nav_link )."'>".$nb_pages."</a>";
+				  }
+			  }
+			else
+			  {
+				$for_start	= 1;
+				$for_end	= 11;
+				$add_first	= "";
+				$add_end	= "... <a class='".$class."_number".( ($current==$nb_pages) ? " ".$class."_number_current" : "" )."' href='".str_replace( "{%PAGE%}" , $nb_pages , $nav_link )."'>".$nb_pages."</a>";
+			  }
+
+
+			$navigation .= $add_first;
+			for( $i=$for_start ; $i<$for_end ; $i++ )
+			  {
+				$navigation   .= "<a class='".$class."_number".( ($i==$current) ? " ".$class."_number_current" : "" )."' href='".str_replace( "{%PAGE%}" , $i , $nav_link )."'>".$i."</a>";
+			  }
+			$navigation .= $add_end;
+
+
+		  }
+		else
+		  {
+			for( $i=1 ; $i < ($nb_pages+1) ; $i++ )
+			  {
+				$navigation   .= "<a class='".$class."_number".( ($i==$current) ? " ".$class."_number_current" : "" )."' href='".str_replace( "{%PAGE%}" , $i , $nav_link )."'>".$i."</a>";
+			  }
+		  }
+
+		if( $current < $nb_pages )
+		  {
+			$navigation   .= "<a id='".$class."_next' class='".$class."_number' href='".str_replace( "{%PAGE%}" , ( $current+1 ), $nav_link )."'>&raquo;</a>";
+		  }
+
+		$navigation .= "
+				</div>";
+	  }
+
+
+	$query = $this->query( $query." LIMIT $page , ".$nb_results_par_page."" );
+
+	if( $query["nb"] > 0 )
+	  {
+		$return["data"]			= $query["data"];
+		$return["navigation"]		= $navigation;
+		$return["current"]		= $current;
+		$return["nb_pages"]		= $nb_pages;
+		$return["nb_results"]		= $nb_results;
+		$return["nb_par_pages"]		= $nb_results_par_page;
+
+		return $return;
+	  }
+	else
+	  {
+		return false;
+	  }
+  }
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CONVERTIT UN TABLEAU CHAMPS/VALEUR AU FORMAT REQUETE SQL */
+public function sql_data( $sql_data )
+  {
+	$sql = array();
+
+	/*
+	$before_sql_data	= false;
+	global $app;
+	if( isset($app) AND method_exists( $app, "before_sql_data" ) )
+  	  {
+		$before_sql_data = true;
+  	  }
+  	if( $before_sql_data )
+  	  {
+		$tmp 		= $app->before_sql_data( $field , $data );
+		$field	= $tmp["field"];
+		$data		= $tmp["data"];
+  	  }
+	*/
+
+	foreach( $sql_data as $field => $data )
+	  {
+	  
+		$sql[] = $field." = ".$this->protect( $data );
+	  }
+
+	return implode( ",\n" , $sql );
+  }
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOI LES VALEURS POSSIBLES POUR UN CHAMP ENUM */
+public function enum_values( $table , $field )
+  {
+  	$enum = array();
+	$type = $this->row( "SHOW COLUMNS FROM ".$table." WHERE Field = '".$field."'" )["Type"];
+
+	if( preg_match( "/^enum\(\'(.*)\'\)$/" , $type , $matches ) )
+	  {
+		$enum	= explode( "','" , $matches[1] );
+	  }
+
+	return $enum;	
+
+  }
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES RESULTATS D'UNE SEUL COLONNE SOUS FORME DE TABLEAU */
+public function get_values( $query )
+  {
+	$return 		= array();
+	$query		= $this->query( $query , true );
+
+	if( $query["nb"] > 0 )
+	  {
+		foreach( $query["data"] as $row )
+		  {
+			$return[] = $row[0];
+		  }
+	  }
+
+	return $return;
+  }
+
+  
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- DESTRUCTEUR */
+public function __destruct()
+  {
+	$this->database_disconnect();
+  }
+
+}
+
+
+
+
+
+

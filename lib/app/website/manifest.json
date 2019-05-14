@@ -1,0 +1,16 @@
+{
+  "short_name": "_HTML",
+  "name": "_HTML Framework",
+  "icons": [
+    {
+      "src": "/images/apple-touch-icon.png",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/?start",
+  "background_color": "#0000ff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#0000ff"
+}
+

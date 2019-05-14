@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang='fr' itemscope itemtype='https://schema.org/WebPage'>
+<head>
+	<title>Documentation _HTML</title>
+	<meta charset='UTF-8'>
+	<style>
+
+		body
+			{
+				font-family : Helvetica Neue,Helvetica,Arial,sans-serif; 
+				padding : 40px 10%;
+			}
+
+		
+
+	</style>
+</head>
+<body>
+
+	<div style="padding:10px;text-align:center;font-style:italic;color:#DD0000;background-color:#F6D7D7;">Version en cours de rédaction</div>
+	
+	<br />
+	<br />
+	
+	<h1>Exemple d'une page basique</h1>
+	
+	<h2>page_exemple.php</h2>
+
+	<br />
+
+	<h3>Code source de la page</h3>
+
+<xmp><?php
+	
+include("lib/app/website/app.php");
+
+$_HTML['page']			 = 'page_exemple';
+$_HTML['title']			 = 'Page EXEMPLE';
+
+$_HTML['data']['content']	.= 'Contenu de la page';
+
+$_HTML['display'] 		 = true;
+
+</xmp>
+			
+	<br />
+		<h3>Explications</h3>
+
+	<code>include("lib/app/<b>website</b>/app.php");</code>
+		Inclut la classe qui va gérer l'app "<b>website</b>".
+	<br />A l'appel du fichier, l'app s'auto initialise et créer la variable <b>$app</b>.
+	<br />C'est cette variable qui permettra d'appeler toutes les fonctions utiles pour faire fonctionner le site.
+	<br />
+	<br /><b>Cette étape est très importante, c'est ici que tout le site s'initialise.</b> &nbsp; <a href='#app'>Plus d'informations</a>
+	<br />
+	<br />
+
+<code>$_HTML['page']			 = 'page_exemple';
+$_HTML['title']			 = 'Page EXEMPLE';</code>
+
+		Définit le nom de la page utilisé en internet dans l'app. C'est un code qui permet d'identifier chaque page.
+	<br />Définition aussi du titre de la page, il sera renseigné dans la balise <b>&lt;title&gt;</b>.
+	<br />
+	<br />
+	<br /><code>$_HTML['data']['content']	.= 'Contenu de la page';</code>
+		Remplit la variable '<b>content</b>' qui stocke tout le contenu de la page ( entre les balises &lt;body&gt;&lt;/body&gt; ).
+	<br />
+	<br />
+	<br /><code>$_HTML['display'] 		 = true;</code>
+		Définit la variable '<b>display</b>' pour autoriser l'affichage à l'écran.
+	<br />Pour un script sans affichage ou pour désactiver l'affichage, il suffit de ne pas écrire cette ligne ou de forcer à <b>false</b>.
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+
+
+
+
+
+
+
+
+
+
+	<a name='app'></a>
+	<h1>Initialisation d'une APP</h1>
+	<b>Explication détaillée  du fonctionnment dans l'ordre d'exécution du fichier.</b>
+
+	<br />
+	<br />
+	<h2>/mon_script.php</h2>
+
+	<h3>Chargement de l'app depuis le script</h3>
+	<code>include("lib/app/<b>website</b>/app.php");</code>	
+	<br />
+	<br />
+	<h2>/lib/app/website/app.php</h2>	
+	<b>app.php</b> contient la classe "app" permetant de faire fonctionner tout le site.
+	<br />C'est une extension de la classe "app_core" qui elle contient les fonctions de base des apps.
+	<br />
+	<br />
+	<h3>Choix des modules à inclure</h3>
+<code>$modules = array(
+	'debug',
+	'template',
+	'tools',
+	'database'
+);</code>
+	<h3>Requiert la classe par défaut pour toutes les apps</h3>
+	<code>require_once( DOC_ROOT."/lib/app/_app_core.php" );</code>
+		Cette classe permet d'initialiser le moteur _HTML.
+	<br />Voir ci-après :
+
+
+	<br />
+	<br />
+	<br />
+	<br />
+
+	<h2>/lib/app/_app_core.php</h2>
+	<h3>Fichiers nécessaires au fonctionnement de l'app</h3>
+	
+	<code>require_once( realpath( __DIR__."/.." )."/_html/init.php" );</code>
+	Lance l'initialisation du moteur avec création de la variable <b>$_HTML</b>.
+	<br />
+	<br />
+	<code>require_once( DOC_ROOT."/lib/app/_conf.php" );</code>
+	Fichier de configuration globale du site, contenant les données par défaut ainsi que les identifiants de connexion à la base de données.
+	<br />
+	<br />
+	<code>require_once( DOC_ROOT."/lib/app/_commons.php" );</code>
+	Classe de fonctions communes à plusieurs app.
+
+
+
+	<h3>Les fonctions nécessaires au fonctionnement de l'app</h3>
+
+	<code>public function init()
+  { 	
+	global $_HTML;
+	$this->html = & $_HTML;
+  }
+</code>
+		La fonction <b>init()</b> est appelée depuis le constructeur de l'app et permet d'inclure la variable $_HTML à la variable $app.
+	<br />Cela permet d'avoir accès à la variable $_HTML depuis n'importe quelle fonction de l'app.
+	<br />
+	<br />
+	<code>public function __destruct()
+  {
+  	if(     method_exists( $this, "display" )
+  	    AND isset($this->template)
+  	    AND ( $this->html["display"] === true )
+  	  )
+	  {
+		$this->display();		
+		$this->template->display();
+	  }
+  }
+</code>
+		<b>Autre fonction très importante, le destructeur.</b>
+	<br />
+	<br />C'est à cet endroit et à ce moment (<i>fin d'exéction du script</i>) qu'est prise la décision de lancer l'affichage à l'écran.
+	<br />
+	<br />On vérifie si l'objet <b>template</b> existe et que la fonction <b>display</b> de l'app existe.
+	<br />
+	<br />Puis on execute la fonction display de l'app (avec la gestion des templates/vues), puis on lance la fonction display de l'objet template qui lui va générer tout le code HTML et l'afficher à l'écran.
+	<br />
+	<br />→ <a href='#display'>Détails de la fonction display();</a>
+	
+	<br />
+	<br />
+	<br />
+	<h2>/lib/app/website/app.php</h2>
+
+	
+	<h3>Configuration de l'app avant exécution du script d'appel</h3>
+<code>$_HTML["data"]["header"] 		= "";
+$_HTML["data"]["footer"] 		= "";
+$_HTML["favicon"] 			= array( "image/png" , ROOT."/favicon.ico" );
+$_HTML["viewport"]			= array( "width" => "device-width" );
+$_HTML["meta"]["author"]		= "_HTML";
+$_HTML["meta"]["robots"]		= "index,follow";
+$_HTML["css_files"]["template"] 	= APP_ROOT."/styles.css";
+</code>
+		Ce sont des valeurs par défaut, toutes ces variables peuvent être modifiées dans le script.
+	<br />
+	<h3>Constructeur de l'app</h3>
+
+<code>public function __construct()
+  {
+  	$this->init();
+	$this->debug 		= new debug();
+	$this->html["db"]	= new database(array(
+					"host" 		=> DB_HOST,
+					"user" 		=> DB_USER,
+					"password"	=> DB_PASSWORD,
+					"database"	=> DB_DATABASE
+				  ));
+	$this->tools		= new tools();
+	$this->commons		= new commons();
+	$this->template		= new template();
+  }
+	</code>
+	
+	Initialisation de l'app ( <i>init();</i> ), et des modules chargés (debug, commons, tools, database, ... ).
+
+
+	<div class='space50'></div>
+	<a name='display'></a>
+	<h3>Affichage écran</h3>
+	<xmp>public function display()
+  {</xmp>
+	
+		On vérifie que l'objet <b>template</b> existe bien et que la variable <b>display</b> est à true, ce qui confirme l'affichage écran.
+	<br />
+	<br />
+	
+<xmp>	$js_files = array(
+		"jquery"	=> ROOT."/lib/js/jquery-3.4.0.min.js", 
+		"functions"	=> ROOT."/lib/js/_functions.min.js",
+		"app"		=> APP_ROOT."/website.js" )
+	);
+	
+	$this->html["js_files"] = array_merge( $js_files , $this->html["js_files"] );</xmp>
+	
+		On définit les script javascript à chargés.
+	<br />Le array_merge permet d'écraser les fichiers déjà ajoutés.
+	<br />
+	<br />
+	
+	<xmp>	$this->template->body = "
+	<div id='container'>
+			
+		".$this->html["data"]["content"]."
+	
+	</div>";</xmp>
+
+		Ici, on construit le template html de la page.
+	<br />La variable <b>$this->template->body</b> contient tout le contenu a insérer entre les balises <b>&lt;body&gt;&lt;/body&gt;</b>.
+	<br />
+	<br />On peut adapter différents templates/vues en renseignant la variable <b>$_HTML["template"]</b> dans les pages du site.
+	<br />Selon si on gère un ou plusieurs templates, on renseigne, modifie, adapte la variable <b>$this->template->body</b> en fonction du template.
+	<br />
+	<br />→ <a href='#templates'>Voir exemples</a>
+	<br />
+	<br />
+	
+	<xmp>	$this->check_msg();</xmp>
+	
+		On vérifie si un message temporaire existe, et on l'affiche le cas échéant
+	<br />
+	<br />
+
+	<xmp>  }</xmp>
+
+		Fin.
+	<br />
+	<br />
+	<br />
+
+	<h3>Création de l'objet $app</h3>
+	<code>$app = new app();</code>
+	À la fin du fichier, on initialise l'objet $app qui sera utlisé dans le script de la page.
+	<br />
+
+
+
+	<a name='templates'></a>
+	<h3>Gestion de différentes vues dans l'app</h3>
+		Dans la fonction <a href='#display'><b>display()</b></a> il est possible de créer plusieurs templates/vues.
+	<br />Un paramètre est prévu à cet effet dans la variable globale du site : <b>$_HTML["template"]</b>.
+	<br />La valeur par défaut pour le template est : <span class='monospaced bold'>default</span>
+	<br />
+	<br />On peux jouer avec cette variable pour choisir le template html à afficher, voici un exemple :
+	<br />
+	<br />
+
+	<xmp>public function display()
+  {
+
+       /* ======================== TEMPLATE : IMPRESSION */
+
+        if( $this->html["template"] == "print" )
+          {
+            $this->html["css_files"]["template"] = APP_ROOT."/template_print.css";
+            $this->template->body = "
+             <div id='print_content'>
+                 ".$this->html["data"]["content"]."
+             </div>";
+          }
+
+
+        /* ======================== TEMPLATE : SIMPLE */
+
+        else if( $this->html["template"] == "simple" )
+          {
+            $this->html["css_files"]["template"] = APP_ROOT."/template_simple.css";
+            $this->template->body = "
+             <div id='container'>
+                 ".$this->html["data"]["content"]."
+             </div>";
+          }
+
+
+        /* ======================== TEMPLATE : DEFAULT */
+
+        else
+          {
+            $this->html["css_files"]["template"]    = APP_ROOT."/template.css";
+            $this->html["css_files"]["textes"]      = APP_ROOT."/textes.css";
+            $this->html["css_files"]["formulaires"] = APP_ROOT."/formulaires.css";
+
+            $this->template->body = "
+             <div id='container'>
+             
+               <div id='header'>
+               
+                 ".$this->html["data"]["header"]."
+                 
+               </div>
+               
+               <div id='content'>
+               
+                 ".$this->html["data"]["content"]."
+                 
+               </div>
+             
+               <div id='footer'>
+               
+                 ".$this->html["data"]["footer"]."
+                 
+               </div>
+               
+             </div>";
+          }
+  }
+
+</xmp>
+	
+
+
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+
+	<h1>Communication avec la base de données</h1>
+
+	<h2>Connexion à la base</h2>
+
+		La connexion peut se faire depuis n'importe quelle page, mais généralement on l'initialise dans le constructeur de la classe "app" du fichier "app.php", avec les autres objets initialisés par défaut.
+	<br />
+	<br />
+
+	<h3>Requiert</h3>
+	Pour utiliser la connexion à une base de données, il faut inclure le fichier "<span class='highlight'>database.php</span>" dans le fichier "app.php" avec les autres modules :
+	<br />
+	<br /><i>Exemple :</i>
+<code>$modules = array(
+	'debug',
+	'template',
+	'tools',
+	'<b>database</b>'
+);</code>
+			
+	
+	<h3>Exemple de connexion depuis la classe app</h3>
+
+
+<code>$this->html['db'] = new database(array(
+	'host' 		=> DB_HOST,
+	'user' 		=> DB_USER,
+	'password'	=> DB_PASSWORD,
+	'database'	=> DB_DATABASE
+));</code>
+	
+
+	<br />Un fois initialisée dans la classe app, la connexion à la base peux se faire depuis un script de 2 façons :
+	<br />
+	<ul>
+		<li class='monospaced'>$app->html["db"]</li>
+		<li class='monospaced'>$_HTML["db"]</li>
+	</ul>
+
+	<br />
+
+	<h3>Récupérer une seule ligne</h3>
+	<xmp>$infos = $_HTML["db"]->row( "SELECT * FROM table WHERE id='10' LIMIT 1" );
+
+echo $infos["id"];</xmp>
+
+	ou
+
+	<xmp>$infos = $_HTML["db"]->row( "SELECT * FROM table LIMIT 1" )["id"];</xmp>
+
+	<h3>Récupérer plusieurs lignes</h3>
+
+	<xmp>$query = $_HTML["db"]->query( "SELECT * FROM table ORDER BY id DESC" );
+
+if( $query["nb"] > 0 )
+  {
+	foreach( $query["data"] as $row )
+	  {
+	  	$_HTML["data"]["content"] .= "<br />ID : " .$row["id"];
+	  }
+  }
+
+</xmp>
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+<style>
+
+	h1
+		{
+			margin-bottom :		30px;
+			padding-bottom :		5px;
+			font-weight :		100;
+			color :			#50F;
+			border-bottom :		1px solid #30C;
+		}
+
+	h2
+		{
+			color :			#D33;
+		}
+
+	h3
+		{
+			margin-top :		30px;
+			padding :			5px;
+			color :			rgba( 0 , 0 , 0 , 0.7 );
+			background-color : 	#FFE98A;
+		}
+
+	pre, xmp, blockquote, code, .code
+		{
+			display :			block;
+			margin :			5px 0;
+			padding :			10px;
+			font-family :		monospace;
+			font-size :			12px;
+			line-height :		1.2em;
+			color :			#7d00e7;
+			background-color :		rgba(0,0,0,0.03);
+			border-left :		4px solid #c1aed4;
+			white-space :		pre-wrap;
+		}
+
+</style>
+
+</body>
+</html>
+
+
