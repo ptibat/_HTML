@@ -122,7 +122,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 
 	/* -------------------------------------------------------------- Orientation */
 
-	if( !is_null($file) AND $fix_orientation )
+	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND !is_null($file) AND $fix_orientation )
 	  {
 		$exif = exif_read_data( $file );
 		
