@@ -3,8 +3,8 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
-* Version		: 24.0
-* Last modif	: 03/05/2019 15:00
+* Version		: 24.1
+* Last modif	: 16/05/2019 11:54
 * Description	: Fichier d'initialisation du moteur
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -38,11 +38,30 @@ if( !defined( "ENGINE_ROOT" ) ) 		{	define( "ENGINE_ROOT", str_replace( "\\" , "
 if( !defined( "ROOT" ) ) 			{	define( "ROOT", $root ); }
 if( !defined( "DOC_ROOT" ) ) 			{	define( "DOC_ROOT", str_replace( "//" , "/" , realpath( $_SERVER["DOCUMENT_ROOT"] ).$root ) ); }
 if( !defined( "WWW_ROOT" ) ) 			{	define( "WWW_ROOT", preg_replace( "#".ROOT."$#" , "" , DOC_ROOT ) ); }
-if( !defined( "APP_DOC_ROOT" ) ) 		{	if( isset(debug_backtrace()[1]["file"]) )	{ define( "APP_DOC_ROOT" , dirname( debug_backtrace()[1]["file"] ) ); } else { die( "Erreur APP.D.R" ); } }
-if( !defined( "APP_ROOT" ) ) 			{	define( "APP_ROOT", ROOT.str_replace( ( ( substr( DOC_ROOT , -1 ) == DIRECTORY_SEPARATOR ) ? substr( DOC_ROOT , 0 , -1 ) : DOC_ROOT ) , "" , APP_DOC_ROOT ) ); }
 if( !defined( "URL_SERVER" ) ) 		{	define( "URL_SERVER", $_SERVER["SERVER_NAME"] ); }
 if( !defined( "ABSOLUTE_URL_SERVER" ) ) 	{	define( "ABSOLUTE_URL_SERVER", "http".(  ( isset($_SERVER["HTTPS"]) AND ( $_SERVER["HTTPS"] === "on" ) ) ? "s" : "" )."://".URL_SERVER.( ( isset($_SERVER["SERVER_PORT"]) AND ( $_SERVER["SERVER_PORT"] != 80 ) AND ( !isset($_SERVER["HTTPS"]) OR ( $_SERVER["HTTPS"] !== "on" ) ) ) ? ":".$_SERVER["SERVER_PORT"] : "" ).ROOT ); }
 if( !defined( "FILE" ) ) 			{	define( "FILE", $_SERVER["SCRIPT_NAME"] ); }
+
+if( !defined( "APP_DOC_ROOT" ) )
+  {
+  	$app_doc_root = "";
+
+	if( ( $trace = debug_backtrace() ) AND is_array($trace) AND !empty($trace) )
+	  {
+	  	foreach( $trace as $t )
+	  	  {
+			if( ( $app_doc_root == "" ) AND isset($t["file"]) AND preg_match( "#/app/([a-z0-9]+)/app.php$#i" , $t["file"] ) )
+			  {
+	  			$app_doc_root = dirname( $t["file"] );
+			  }
+	  	  }
+	  }
+	  
+	define( "APP_DOC_ROOT" , $app_doc_root );
+
+  }
+
+if( !defined( "APP_ROOT" ) ) 			{	define( "APP_ROOT", ROOT.str_replace( ( ( substr( DOC_ROOT , -1 ) == DIRECTORY_SEPARATOR ) ? substr( DOC_ROOT , 0 , -1 ) : DOC_ROOT ) , "" , APP_DOC_ROOT ) ); }
 
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------ THE VARIABLE */
