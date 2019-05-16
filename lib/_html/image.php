@@ -120,6 +120,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 	  }
 
 
+
 	/* -------------------------------------------------------------- Orientation */
 
 	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND !is_null($file) AND $fix_orientation )
@@ -261,7 +262,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 		A tester : imagescale()
 	*/
 
-	if( $noise_correction === true )
+	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND ( $noise_correction === true ) )
 	  {
 		imagefilter( $ressource , IMG_FILTER_NEGATE );
 	  }
@@ -278,7 +279,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 		if( $ratio_hauteur < $ratio_largeur )
 		  {
 			$width 		= $src_largeur;
-			$src_largeur	= $largeur * $ratio_hauteur;
+			$src_largeur		= $largeur * $ratio_hauteur;
 			$cx			= ( $width - $src_largeur ) / 2;
 		  }
 
@@ -299,7 +300,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 
 	/* -------------------------------------------------------------- Noise correction ( 2/2 ) */
 
-	if( $noise_correction === true )
+	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND ( $noise_correction === true ) )
 	  {
 		imagefilter( $image , IMG_FILTER_NEGATE );
 	  }
