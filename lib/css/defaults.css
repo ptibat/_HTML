@@ -1079,9 +1079,9 @@ button.bouton.large
 /* ----------------------------------------------------------------- BLEU */
 
 .bouton.bleu,
-.tag.bleu				{ background-color : 	#5d9cec; }
+.tag.bleu				{ background-color : 	#3975ef; }
 .bouton.bleu:not(.disabled):hover,
-.bouton.bleu.current		{ background-color :	#4a89dc; color : #FFFFFF; }
+.bouton.bleu.current		{ background-color :	#4058e8; color : #FFFFFF; }
 .bouton.bleu,
 .bouton.bleu *,
 .tag.bleu,
@@ -1090,9 +1090,9 @@ button.bouton.large
 /* ----------------------------------------------------------------- BLEU CLAIR */
 
 .bouton.bleu_clair,
-.tag.bleu_clair			{ background-color :	#D5EAED; }
+.tag.bleu_clair			{ background-color :	#c8e5eb; }
 .bouton.bleu_clair:not(.disabled):hover,
-.bouton.bleu_clair.current	{ background-color :	#C0E3E8; }
+.bouton.bleu_clair.current	{ background-color :	#bbdfe7; }
 .bouton.bleu_clair,
 .bouton.bleu_clair *,
 .tag.bleu_clair,

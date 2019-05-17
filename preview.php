@@ -259,6 +259,7 @@ $_HTML["data"]["content"] .= "
 			"vert",
 			"orange",
 			"rouge",
+			"bleu_clair",
 			"cyan",
 			"bleu",
 			"violet",
