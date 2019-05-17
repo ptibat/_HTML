@@ -259,7 +259,6 @@ $_HTML["data"]["content"] .= "
 			"vert",
 			"orange",
 			"rouge",
-			"bleu_clair",
 			"cyan",
 			"bleu",
 			"violet",
@@ -267,7 +266,15 @@ $_HTML["data"]["content"] .= "
 			"menthe",
 			"rose",
 			"framboise",
-			"gris_fonce"
+			"gris_fonce",
+			"gris",
+			
+			"gris_clair",
+			"vert_clair",
+			"bleu_clair",
+			"jaune_clair",
+			"orange_clair",
+			"rouge_clair"
 		);
 
 		foreach( $couleurs as $couleur )

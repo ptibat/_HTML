@@ -1,7 +1,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 18/04/2014
-* Last modif	: 03/05/2019 17:30
+* Last modif	: 17/05/2019 12:00
 * Description	: Fichier de config CSS par defaut
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -784,7 +784,8 @@ div.erreur
 	{
 		vertical-align :		middle;
 		margin :			1px;
-		background-color :		#0086D3;
+		color :			#333333;
+		background-color :		#A2A2A1; /* 0086D3 */
 	}
 
 .tag,
@@ -1068,7 +1069,7 @@ button.bouton.large
 /* ----------------------------------------------------------------- CYAN */
 
 .bouton.cyan,
-.tag.cyan				{ background-color : 	#4fc1e9; }
+.tag.cyan				{ background-color : 	#05B9D6; }
 .bouton.cyan:not(.disabled):hover,
 .bouton.cyan.current		{ background-color :	#3bafda; color : #FFFFFF; }
 .bouton.cyan,
@@ -1086,17 +1087,6 @@ button.bouton.large
 .bouton.bleu *,
 .tag.bleu,
 .tag.bleu *				{ color : 			#FFFFFF; }
-
-/* ----------------------------------------------------------------- BLEU CLAIR */
-
-.bouton.bleu_clair,
-.tag.bleu_clair			{ background-color :	#c8e5eb; }
-.bouton.bleu_clair:not(.disabled):hover,
-.bouton.bleu_clair.current	{ background-color :	#bbdfe7; }
-.bouton.bleu_clair,
-.bouton.bleu_clair *,
-.tag.bleu_clair,
-.tag.bleu_clair *			{ color :			#006775; }
 
 /* ----------------------------------------------------------------- VIOLET */
 
@@ -1131,6 +1121,75 @@ button.bouton.large
 .tag.gris_fonce,
 .tag.gris_fonce *			{ color : 			#FFFFFF; }
 
+
+
+
+
+/* ----------------------------------------------------------------- GRIS CLAIR */
+
+.bouton.gris_clair,
+.tag.gris_clair			{ background-color : 	#e3e3e3; }
+.bouton.gris_clair:not(.disabled):hover,
+.bouton.gris_clair.current	{ background-color :	#cfcfcf; color : #444444; }
+.bouton.gris_clair,
+.bouton.gris_clair *,
+.tag.gris_clair,
+.tag.gris_clair *			{ color : 			#444444; }
+
+/* ----------------------------------------------------------------- JAUNE CLAIR */
+
+.bouton.jaune_clair,
+.tag.jaune_clair			{ background-color : 	#ffeb9b; }
+.bouton.jaune_clair:not(.disabled):hover,
+.bouton.jaune_clair.current	{ background-color :	#fde585; }
+.bouton.jaune_clair,
+.bouton.jaune_clair *,
+.tag.jaune_clair,
+.tag.jaune_clair *			{ color : 			#6b4600; }
+
+/* ----------------------------------------------------------------- VERT CLAIR */
+
+.bouton.vert_clair,
+.tag.vert_clair			{ background-color : 	#d0f2ab; }
+.bouton.vert_clair:not(.disabled):hover,
+.bouton.vert_clair.current	{ background-color :	#bef285; color : #315d00; }
+.bouton.vert_clair,
+.bouton.vert_clair *,
+.tag.vert_clair,
+.tag.vert_clair *			{ color : 			#315d00; }
+
+/* ----------------------------------------------------------------- BLEU CLAIR */
+
+.bouton.bleu_clair,
+.tag.bleu_clair			{ background-color :	#c8edf8; }
+.bouton.bleu_clair:not(.disabled):hover,
+.bouton.bleu_clair.current	{ background-color :	#bce9f6; }
+.bouton.bleu_clair,
+.bouton.bleu_clair *,
+.tag.bleu_clair,
+.tag.bleu_clair *			{ color :			#006775; }
+
+/* ----------------------------------------------------------------- ROUGE CLAIR */
+
+.bouton.rouge_clair,
+.tag.rouge_clair			{ background-color : 	#fcc6c6; }
+.bouton.rouge_clair:not(.disabled):hover,
+.bouton.rouge_clair.current	{ background-color :	#ffbebe; color : #960202; }
+.bouton.rouge_clair,
+.bouton.rouge_clair *,
+.tag.rouge_clair,
+.tag.rouge_clair *			{ color : 			#960202; }
+
+/* ----------------------------------------------------------------- ORANGE CLAIR */
+
+.bouton.orange_clair,
+.tag.orange_clair			{ background-color : 	#FFD193; }
+.bouton.orange_clair:not(.disabled):hover,
+.bouton.orange_clair.current	{ background-color :	#FFC16E; color : #744300; }
+.bouton.orange_clair,
+.bouton.orange_clair *,
+.tag.orange_clair,
+.tag.orange_clair *		{ color : 			#744300; }
 
 
 
