@@ -1087,6 +1087,17 @@ button.bouton.large
 .tag.bleu,
 .tag.bleu *				{ color : 			#FFFFFF; }
 
+/* ----------------------------------------------------------------- BLEU CLAIR */
+
+.bouton.bleu_clair,
+.tag.bleu_clair			{ background-color :	#D5EAED; }
+.bouton.bleu_clair:not(.disabled):hover,
+.bouton.bleu_clair.current	{ background-color :	#C0E3E8; }
+.bouton.bleu_clair,
+.bouton.bleu_clair *,
+.tag.bleu_clair,
+.tag.bleu_clair *			{ color :			#006775; }
+
 /* ----------------------------------------------------------------- VIOLET */
 
 .bouton.violet,
