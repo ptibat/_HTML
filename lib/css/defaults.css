@@ -56,11 +56,23 @@ code,
 		padding :			10px;
 		font-family :		monospace;
 		font-size :			12px;
-		color :			#5500FF; /* 003D89 */
+		color :			#0060e2;
 		background-color :		rgba( 0 , 0 , 0 , 0.03 );
 		border-left :		4px solid #2063AA;
 		white-space :		pre-wrap;
 	}
+
+span.code
+	{
+		display :			inline-block;
+		margin :			2px;
+		padding :			4px 5px;
+		background-color :		rgba( 0 , 0 , 0 , 0.03 );
+		border :			1px solid #DFDFDF;
+		vertical-align :		middle;
+		border-radius :		3px;
+	}
+
 
 
 

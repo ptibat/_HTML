@@ -348,6 +348,10 @@ body
 	}
 </pre>
 
+<div class='space20'></div>
+
+Exemple avec une balise span : <span class='code'>&lt;span class=\"code\"&gt;&lt;/span&gt;</span>
+
 
 
 
