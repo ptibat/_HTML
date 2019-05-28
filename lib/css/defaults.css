@@ -1,7 +1,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 18/04/2014
-* Last modif	: 17/05/2019 12:00
+* Last modif	: 28/05/2019 12:50
 * Description	: Fichier de config CSS par defaut
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -1581,7 +1581,7 @@ span.checkbox > input[type="checkbox"]:checked + label:before,
 span.radio > input[type="radio"]:checked + label:before
 	{
 		border-color :		#01AD12;
-		background-color :	#01AD12;
+		background-color :		#01AD12;
 		background-image :	url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20d%3D%22M13.613%2027.068l-7.94-7.28q-.285-.267-.442-.613t-.172-.7.11-.71.394-.638q.52-.583%201.3-.614T8.225%2017l6.13%205.626%208.79-17q.363-.693%201.104-.93t1.433.118.93%201.103-.126%201.442L16.56%2026.55q-.204.394-.558.654t-.78.34q-.063.015-.118.023t-.11.008-.102%200q-.74%200-1.276-.504z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E");
 		background-size :		14px auto;
 	}
@@ -1590,7 +1590,7 @@ span.checkbox > input[type="checkbox"]:disabled + label:before,
 span.radio > input[type="radio"]:disabled + label:before
 	{
 		border-color :		rgba( 0 , 0 , 0 , 0.1 );
-		background-color :	#E2DEDE;
+		background-color :		#E2DEDE;
 		cursor :			not-allowed;
 	}
 
@@ -1608,7 +1608,23 @@ span.checkbox.bleu > input[type="checkbox"]:checked + label:before,
 span.radio.bleu > input[type="radio"]:checked + label:before
 	{
 		border-color :		#0071C1;
-		background-color :	#0071C1;
+		background-color :		#0071C1;
+	}
+
+
+/* ------------------- JAUNE */
+
+span.checkbox.jaune:hover > label:before,
+span.radio.jaune:hover > label:before
+	{
+		border-color :		#FEA700;
+	}
+
+span.checkbox.jaune > input[type="checkbox"]:checked + label:before,
+span.radio.jaune > input[type="radio"]:checked + label:before
+	{
+		border-color :		#FEA700;
+		background-color :		#FEA700;
 	}
 
 
@@ -1624,7 +1640,7 @@ span.checkbox.orange > input[type="checkbox"]:checked + label:before,
 span.radio.orange > input[type="radio"]:checked + label:before
 	{
 		border-color :		#EF5B00;
-		background-color :	#FF6607;
+		background-color :		#FF6607;
 	}
 
 
@@ -1640,7 +1656,7 @@ span.checkbox.rouge > input[type="checkbox"]:checked + label:before,
 span.radio.rouge > input[type="radio"]:checked + label:before
 	{
 		border-color :		#EE0000;
-		background-color :	#EE0000;
+		background-color :		#EE0000;
 	}
 
 
@@ -1657,7 +1673,7 @@ span.checkbox.gris > input[type="checkbox"]:checked + label:before,
 span.radio.gris > input[type="radio"]:checked + label:before
 	{
 		border-color :		#A0A0A0;
-		background-color :	#A0A0A0;
+		background-color :		#A0A0A0;
 	}
 
 

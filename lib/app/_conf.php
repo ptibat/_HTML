@@ -33,7 +33,7 @@ else
 $_HTML["administrator"]				= ""; /* Adresse email pour envoi des erreurs */
 $_HTML["site_name"] 				= "_HTML";
 $_HTML["baseline"] 				= "Micro framework PHP";
-$_HTML["title"] 					= $_HTML["site_name"].", ".$_HTML["baseline"];
+$_HTML["title"] 					= $_HTML["site_name"].( !empty($_HTML["baseline"]) ? ", ".$_HTML["baseline"] : "" );
 $_HTML["multilang"]				= true;
 $_HTML["langs"]					= array(
 								"fr" => "Français",
