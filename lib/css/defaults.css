@@ -1,7 +1,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 18/04/2014
-* Last modif	: 28/05/2019 12:50
+* Last modif	: 06/10/2020 10:24
 * Description	: Fichier de config CSS par defaut
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -12,7 +12,7 @@
 body
 	{
 		color :			#000000;
-		background-color :		#FFFFFF;
+		background-color :	#FFFFFF;
 	}
 
 	
@@ -39,7 +39,7 @@ option,
 textarea,
 button
 	{
-		font-family :		Sans-serif;
+		font-family :		sans-serif;
 		font-size :			14px;
 		-webkit-appearance :	none;
 		-webkit-border-radius :	0; 
@@ -110,17 +110,18 @@ a.external:after
 		display :			inline-block;
 		content :			"";
 		margin-left :		4px;
-		width :			10px;
-		height :			10px;
-		background-image :	url( "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAT0lEQVR4AWNABf/BAF3Q7P+r/z8Z/u/9DwEnwULP/3sAVQK5TnBVzyFsoCBc6Ml/GwgbIbj6vyWQPIwsCFeCT/C/B1zIAya4/T8y2A4SAwDXr01fqZ9p4wAAAABJRU5ErkJggg==" );
+		width :			14px;
+		height :			14px;
+		background-image :	url( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='square' stroke-linejoin='arcs'><g fill='none' fill-rule='evenodd'><path d='M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8c0-1.1.9-2 2-2h5M15 3h6v6M10 14L20.2 3.8'/></g></svg>" );
+		background-size :		14px 14px;
 		background-position :	center center;
 		background-repeat :	no-repeat;
 		vertical-align :		middle;
 		opacity :			0.7;
 	}
-a.external.black:after
+a.external.white:after
 	{	
-		background-image :	url( "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAS0lEQVR4AWNAA//BEA2YMbxi+MnAsBcqexIs9JzBA8gGIie4qucw9n+40BMGGyCNIriawRJIHkYVhPLwCnrAhTxggtuBDATcDhICABKGIYsN9sAHAAAAAElFTkSuQmCC" );
+		background-image :	url( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='square' stroke-linejoin='arcs'><g fill='none' fill-rule='evenodd'><path d='M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8c0-1.1.9-2 2-2h5M15 3h6v6M10 14L20.2 3.8'/></g></svg>" );
 	}
 
 a.external:hover:after
@@ -173,7 +174,6 @@ a.external:hover:after
 .blur
 	{
 		-webkit-filter :		blur(0.25em);
-		   -moz-filter :		blur(0.25em);
 		    -ms-filter :		blur(0.25em);
 		     -o-filter :		blur(0.25em);
 		        filter :		blur(0.25em);
@@ -191,13 +191,8 @@ img
 
 img.grayscale
 	{
-		/* IE6-9 */
 		filter :			gray;
-
-		/* Firefox 10+, Firefox on Android */
 		filter :			url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-
-		/* Chrome 19+, Safari 6+, Safari 6+ iOS */
 		-webkit-filter :		grayscale(100%);
 	}
 
@@ -371,18 +366,19 @@ u,
 .pre,
 code
 	{
-		display :			block;
-		white-space :		pre-wrap;
+		display :				block;
+		white-space :			pre-wrap;
 	}
 
 .lines
 	{
-		white-space :		pre-line;
+		white-space :			pre-line;
 	}
 
-.nowrap
+.nowrap,
+.nbsp
 	{
-		white-space :		nowrap;
+		white-space :			nowrap;
 	}
 
 .light,
@@ -406,6 +402,11 @@ input.blue
 .small
 	{
 		font-size :			12px;
+	}
+
+.condensed
+	{
+		letter-spacing :		-0.02em;
 	}
 
 .uppercase
@@ -495,18 +496,15 @@ sub
 	{
 		
 		display :			-webkit-flex;
-		display :			-moz-flex;
 		display :			flex;
 
 		-webkit-flex-flow :	wrap;
-		   -moz-flex-flow :	wrap;
 		   	  flex-flow :	wrap;
 	}
 
 .flexbox
 	{
 		-webkit-flex :		1 auto;
-		   -moz-flex :		1 auto;
 		        flex :		1 auto;
 	}
 
@@ -521,7 +519,7 @@ sub
 		content :			"\0020";
 		display :			block;
 		overflow :			hidden;
-		visibility :			hidden;
+		visibility :		hidden;
 		width :			0;
 		height :			0;
 	}
@@ -529,11 +527,6 @@ sub
 .clearfix:after
 	{
 		clear :			both;
-	}
-
-.clearfix
-	{
-		zoom :			1;
 	}
 
 .clear
@@ -558,9 +551,17 @@ sub
 	{
 		position :			relative;
 		padding-bottom :		56.25%;
-		padding-top :		30px;
 		height :			0;
 		overflow :			hidden;
+	}
+
+.autosize.ratio-4-3
+	{
+		padding-bottom :		75%;
+	}
+.autosize.ratio-3-2
+	{
+		padding-bottom :		66.66%;
 	}
 
 .autosize iframe,  
@@ -624,7 +625,7 @@ select:-moz-focusring
 	{
 		-webkit-touch-callout :	none;
 		  -webkit-user-select :	none;
-		   -khtml-user-select :	one;
+		   -khtml-user-select :	none;
 		     -moz-user-select :	none;
 		      -ms-user-select :	none;
 		          user-select :	none;
@@ -648,6 +649,11 @@ select.minimalist
 		left :				0;
 		right :			0;
 		border-bottom :		2px solid #DA0000;
+	}
+
+.disable_double_tap_zoom
+	{
+		touch-action :		manipulation;
 	}
 
 
@@ -720,7 +726,7 @@ select.minimalist
 	{
 		display :			inline-block;
 		vertical-align :		middle;
-		padding :			2px 6px 4px 6px;
+		padding :				4px 6px;
 		border-radius :		2px;
 	}
 
@@ -731,7 +737,7 @@ select.minimalist
 .important.big,
 .erreur.big
 	{
-		padding :			10px 20px 12px 20px;
+		padding :				12px 20px;
 	}
 
 div.info,
@@ -750,33 +756,33 @@ div.erreur
 .message
 	{
 		color :			#0080a6 !important;
-		background-color :		#DBF1F7 !important;
+		background-color :	#DBF1F7 !important;
 	}
 
 .info,
 .message.ok
 	{
 		color :			#117700 !important;
-		background-color :		#D8EFAC !important;
+		background-color :	#D8EFAC !important;
 	}
 
 .note
 	{
 		color :			#6B4E00 !important;
-		background-color :		#FFF19B !important;
+		background-color :	#FFF19B !important;
 	}
 	
 .erreur
 	{
 		color :			#FFFFFF !important;
-		background-color :		#AB0000 !important;
+		background-color :	#AB0000 !important;
 	}
 
 .important,
 .message.error
 	{
 		color :			#AA0000 !important;
-		background-color :		#FCD1D1 !important;
+		background-color :	#FCD1D1 !important;
 	}
 
 /* ------------------------------------------------------------------------------------ MESSAGES */
@@ -786,7 +792,7 @@ div.erreur
 		display :			block;
 		margin :			5px 0;
 		padding :			30px 20px;
-		text-align :			center;
+		text-align :		center;
 	}
 
 
@@ -797,7 +803,7 @@ div.erreur
 		vertical-align :		middle;
 		margin :			1px;
 		color :			#333333;
-		background-color :		#A2A2A1; /* 0086D3 */
+		background-color :	#A2A2A1; /* 0086D3 */
 	}
 
 .tag,
@@ -984,7 +990,7 @@ button.bouton.large
 		position :			absolute;
 		top :				0;
 		bottom :			0;
-		left :				0;
+		left :			0;
 		right :			100%;
 		background :		#0000DD;
 		-webkit-transition :	all 0.15s ease-in;
@@ -1478,18 +1484,21 @@ textarea.resize
 
 select
 	{
-		padding :			2px 25px 2px 8px;
 		-webkit-appearance :	none;
 		   -moz-appearance :	none;
 		        appearance :	none;
-		
+	}
+
+select:not([multiple])
+	{
+		padding :			2px 25px 2px 8px;
 		background-image :	url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23999999'><polygon points='0,0 100,0 50,50'/></svg>");
 		background-size :		15px;
 		background-position :	calc( 100% - 5px ) 9px;
 		background-repeat :	no-repeat;
 	}
 
-select:hover
+select:not([multiple]):hover
 	{
 		background-image :	url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23C11A46'><polygon points='0,0 100,0 50,50'/></svg>");
 	}
@@ -1745,23 +1754,23 @@ table.tableau.hover > tbody > tr:hover > td
 .table,
 .table100
 	{
-		display :			table;
+		display :				table;
 	}
 
 .table100
 	{
-		width :			100%;
+		width :				100%;
 	}
 	
 .table_row
 	{
-		display :			table-row;
+		display :				table-row;
 	}
 	
 .table_cell
 	{
-		display :			table-cell;
-		padding :			2px;
+		display :				table-cell;
+		padding :				2px;
 	}
 
 
@@ -1769,10 +1778,10 @@ table.tableau.hover > tbody > tr:hover > td
 
 .btn_confirm
 	{
-		display :			inline-block;
-		vertical-align :		center;
-		height :			24px;
-		line-height :		22px;
+		display :				inline-block;
+		vertical-align :			center;
+		height :				24px;
+		line-height :			22px;
 	}
 
 .btn_confirm_span_1,
@@ -1780,54 +1789,54 @@ table.tableau.hover > tbody > tr:hover > td
 .btn_confirm_link_oui,
 .btn_confirm_link_non
 	{
-		display :			inline-block;
-		height :			24px;
-		line-height :		22px;
-		font-size :			12px;
+		display :				inline-block;
+		height :				24px;
+		line-height :			22px;
+		font-size :				12px;
 	}
 
 .btn_confirm_span_1
 	{
-		padding :			0px 10px;
-		color :			#9a9294;
-		border-radius :		2px;
+		padding :				0px 10px;
+		color :				#9a9294;
+		border-radius :			2px;
 	}
 
 .btn_confirm_span_1:hover
 	{
-		color :			#FFFFFF;
+		color :				#FFFFFF;
 		background-color :		#AA0000;
-		cursor :			pointer;
+		cursor :				pointer;
 	}
 
 .btn_confirm_span_2
 	{
-		display :			none;
-		padding-left :		9px;
-		color :			#EA0000;
+		display :				none;
+		padding-left :			9px;
+		color :				#EA0000;
 	}
 
 
 .btn_confirm_link_oui
 	{
-		margin-left :		10px;
+		margin-left :			10px;
 	}
 
 .btn_confirm_link_oui,
 .btn_confirm_link_non
 	{
-		padding :			0 5px;
-		border-radius :		2px;
-		color :			#000000 !important;
+		padding :				0 5px;
+		border-radius :			2px;
+		color :				#000000 !important;
 	}
 
 .btn_confirm_link_oui:hover,
 .btn_confirm_link_non:hover
 	{
-		color :			#FFFFFF;
-		color :			#FFFFFF !important;
-		text-decoration :		none;
-		cursor :			pointer;
+		color :				#FFFFFF;
+		color :				#FFFFFF !important;
+		text-decoration :			none;
+		cursor :				pointer;
 	}
 
 .btn_confirm_link_oui:hover
@@ -1884,6 +1893,37 @@ table.tableau.hover > tbody > tr:hover > td
 	}
 
 
+/* ------------------------------------------------------------------------------------ ANIMATIONS */
+
+.blink
+	{
+		-webkit-animation :		blink 0.9s infinite;
+		   -moz-animation :		blink 0.9s infinite;
+		    -ms-animation :		blink 0.9s infinite;
+		        animation :		blink 0.9s infinite;
+	}
+
+@keyframes blink
+	{
+		0% 		{ opacity: 		0; }
+		1% 		{ opacity: 		1; }
+		49% 		{ opacity: 		1; }
+		50% 		{ opacity: 		0; }
+		100% 		{ opacity: 		0; }
+	}
+
+@-webkit-keyframes blink
+	{
+		0% 		{ opacity: 		0; }
+		1% 		{ opacity: 		1; }
+		49% 		{ opacity: 		1; }
+		50% 		{ opacity: 		0; }
+		100% 		{ opacity: 		0; }
+	}
+
+
+
+
 
 /* ------------------------------------------------------------------------------------ POUR L'IMPRESSION */
 
@@ -1898,9 +1938,19 @@ table.tableau.hover > tbody > tr:hover > td
 
 
 
+
+/* ------------------------------------------------------------------------------------ REDUCITON DES ANIMATIONS */
+
+@media ( prefers-reduced-motion : reduce )
+	{
+		.animation {}
+	}
+
+
+
+
+
 /* ------------------------------------------------------------------------------------ */
-
-
 
 
 
