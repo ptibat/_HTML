@@ -3,6 +3,7 @@
 
 **_HTML**, c'est un micro-framework **PHP**.  
 C’est une boîte à outils qui vous permet de mettre en place rapidement et facilement un site internet.
+Pourquoi "_HTML" ? ... tout simplement parce qu'au final on produit du code HTML pour un navigateur... ;)
 
 
 
@@ -15,8 +16,8 @@ Ainsi, la création d’une page est très rapide.
 ## Ce dont vous avez besoin
 
 - Un serveur web (Apache,…)
-- Un serveur MySQL (*optionnel*)
-- Une version de PHP supérieure à 5.6
+- Un serveur SQL (*optionnel*)
+- Une version de PHP supérieure à 7
 
 
 ## Compatibilité
