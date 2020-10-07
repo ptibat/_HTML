@@ -2,7 +2,7 @@
 
 
 **_HTML**, c'est un micro-framework **PHP**.  
-C’est une boîte à outils qui vous permet de mettre en place rapidement et facilement un site internet.
+C’est une boîte à outils qui vous permet de mettre en place rapidement et facilement un site internet.  
 Pourquoi "_HTML" ? ... tout simplement parce qu'au final on produit du code HTML pour un navigateur... ;)
 
 
