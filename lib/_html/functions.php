@@ -3,8 +3,8 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 07/05/2007
-* Version		: 20.0
-* Last modif	: 10/05/2019 12:30
+* Version		: 23.0.1
+* Last modif	: 20/01/2020 17:44
 * Description	: Classe de fonctions en tout genre
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -17,7 +17,7 @@ class functions {
 	private static $repertoire_cache	= "/cache/";			/* Répertoire de stockage des fichiers mis en cache */
 	private static $execution_times	= array();				/* Temps d'executions */
 	private static $directory_sort	= "name";				/* Tri par defaut du listing des répertoires */
-	public static  $php_user			= "";					/* Nom du compte utilisateur connecté avec PHP Auth */
+	public static  $php_user		= "";					/* Nom du compte utilisateur connecté avec PHP Auth */
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOYE UNE ERREUR LORS DE L'EXECUTION D'UNE FONCTION INEXISTANTE */
 public static function __callStatic( $m , $a )
@@ -78,7 +78,6 @@ public static function current_url( $parameters = array() , $root = true )
 	$protocol	= "http".(  ( isset($_SERVER["HTTPS"]) AND ( $_SERVER["HTTPS"] === "on" ) ) ? "s" : "" )."://";
 	$url		= $protocol.$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"];
 	$url		= self::url_parameters( $url , $parameters );
-
 	return $url;
   }
 
@@ -99,7 +98,6 @@ public static function url_parameters( $url , $parameters = array() )
 	  	
 		$url = $clean_url."?".http_build_query( $query );
 	  }
-
 	return $url;
   }
 
@@ -144,6 +142,32 @@ public static function ip( $proxy = false )
 
 	return $ip;
   }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOIE L'ADRESSE IP MEME DERRIERE UN PROXY */
+public static function is_ip( $check = null )
+  {
+  	$return 	= false;
+	$ip		= self::ip();
+
+  	if( is_array($check) AND !empty($check) )
+  	  {
+  	  	foreach( $check as $check_ip )
+  	  	  {
+  	  	  	if( $check_ip == $ip )
+  	  	  	  {
+  	  	  	  	$return = true;
+  	  	  	  }
+  	  	  }
+  	  }
+	else if( !is_null($check) AND self::is_valid_ip($check) AND ( $check == $ip ) )
+  	  {
+		$return = true;
+  	  }
+
+	return $return;
+  }
+
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOIE L'HOST EN FONCTION D'UNE IP */
 public static function host( $ip=null )
@@ -359,7 +383,6 @@ public static function remove_html_tags( $text , $tags="" )
 	  {
 	  	$text = preg_replace( "/\<br ?\/?\>/i" , " " , $text );
 	  }
-
 	$text = strip_tags( stripslashes( $text ) , $tags );
 
 	return $text; 
@@ -451,7 +474,6 @@ public static function cut_string_strict( $string , $length , $hellip = 1 )
 	  }
   }
 
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- DECOUPE UNE CHAINE TOUS LES xx CARACTERES ENVIRON */
 public static function cut_text( $string , $length=50 , $eol="<br />" )
   {
@@ -473,6 +495,7 @@ public static function alt( $text , $max = 150 , $guillemet = true )
 	$text = str_replace( " " , " " , $text );
 	$text = str_replace( array( "\r\n" , "\r" , "\n" , "\t" , "  " , "   " ) , " " , $text );
 	$text = preg_replace( "/\.(?=[a-z\d])/i" , ". " , $text );
+	$text = preg_replace( "/\. (fr|com|eu|org)( )?$/i" , ".$1" , $text );
 	$text = functions::cut_string( $text , $max );
 	$text = str_replace( '"' , ( $guillemet ? "''" : "" ) , $text );
 	$text = trim( $text );
@@ -505,7 +528,6 @@ public static function raw_text( $texte , $length=null , $new_lines=false )
 	  {
 	  	$texte = self::cut_string( $texte , $length );
 	  }
-
 	return $texte;
   }
 
@@ -563,34 +585,24 @@ public static function no_accents( $string , $method=1 )
 
 	return $string;
   }
-
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- NETTOYE UN TEXTE DES CARACTÈRES SPECIAUX */
 public static function clean_text( $txt )
   {
 	return str_replace( "  " , " " , preg_replace( "/[^\p{L}0-9\-\_\ \\n]/u" , "" , $txt ) );
   }
-
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- NE GARDE DE LA CHAINE QUE LES CARACTERE ALPHANUMERIQUES */
 public static function only_alphanumeric( $txt , $replace = "" , $spaces = true )
   {
   	$reg = ( $spaces == true ) ? "#[^A-Z0-9\-\ ]#i" : "#[^A-Z0-9]#i";
-
 	$txt = self::no_accents( $txt );
 	$txt = preg_replace( $reg , $replace , $txt );
-
 	return $txt;
   }
-
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- NE GARDE DE LA CHAINE QUE LES CARACTERE NUMERIQUES */
 public static function only_numeric( $txt , $replace="" )
   {
 	return preg_replace ("#[^0-9\,\.\-]#i", $replace, $txt );
   }
-
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- GENERE UNE CHAINE UNIQUE DE X CARACTERES */
 public static function random( $nb_char=8 , $type=1 , $nb_strings=1 )
   {
@@ -787,6 +799,33 @@ public static function file_size( $data )
 
 
 	return $taille;
+  }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LA TAILLE DE PLUSIEURS FICHIERS */
+public static function files_size( $wat , $hr = true )
+  {
+  	$taille	= 0;
+  	$files		= array();
+
+  	if( is_array($wat) )
+  	  {
+  	  	$files = $wat;
+  	  }
+	else if( !empty($wat) )
+	  {
+  	  	$files = glob( $wat );
+	  }
+
+	foreach( $files as $filename )
+	  {
+  		if( file_exists($filename) AND is_file($filename ) )
+  		  {
+			$taille += filesize("$filename");
+  		  }
+	  }
+
+	return ( $hr == true ) ? self::file_size( $taille ) : $taille;
   }
 
 
@@ -1028,12 +1067,10 @@ public static function duree( $time1 , $time2 = null )
 	return $return;
   }
 
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CALCUL LE NOMBRE DE JOURS ENTRE 2 DATES */
 /**
 * format de date : yyyy-mm-dd
 */
-
 public static function nb_jours( $date1 , $date2=null )
   {
   	if( is_null($date2) )
@@ -1041,14 +1078,12 @@ public static function nb_jours( $date1 , $date2=null )
 		$date2 = $date1;
 		$date1 = date("Y-m-d");
   	  }
-
 	$date1	= strtotime( $date1 );
 	$date2	= strtotime( $date2 );
 	$diff		= $date2 - $date1;
 
 	return floor( $diff / (60 * 60 * 24) );
   }
-
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CALCUL L'AGE */
 public static function age( $date_de_naissance )
@@ -1074,7 +1109,6 @@ public static function age( $date_de_naissance )
 	  }
 	return $annees;
   }
-
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOYE LE TEMPS EN SECONDES */
 public static function time_in_seconds( $time )
@@ -1105,7 +1139,6 @@ public static function hide_string( $string )
 	  }
 	return $return;
   }
-
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- DECAMOUFFLE UN CHAINE CAMOUFFLEE */
 public static function unhide_string( $string )
@@ -1698,8 +1731,11 @@ public static function verif_antirobots()
 /* --------------------------------------------------------------------------------------------------------------------------------------------- COMPRESSE UN TEXTE EN SUPPRIMANT LES ESPACES ET COMMENTAIRES */
 public static function text_compressor( $data )
   {     
-	$data = preg_replace( "!/\*[^*]*\*+([^/][^*]*\*+)*/!" , "" , $data);					/* Remove comments  */
-	$data = str_replace( array( "\r\n" , "\r" , "\n" , "\t" , "  " , "   " ) , "" , $data );		/* Remove tabs, spaces, newlines, etc. */
+	$data = preg_replace( "!/\*[^*]*\*+([^/][^*]*\*+)*/!" , "" , $data);		/* Remove comments  */	
+	$data = str_replace( array( "\r\n" , "\r" , "\n" ) , "" , $data );		/* Remove newlines */
+	$data = str_replace( array( "\t" ) , " " , $data );					/* Remove tabs */
+	$data = preg_replace( "/\\s{2,}/" , " ", $data );					/* Remove spaces */
+
 
 	/* Supprime les espaces en trop */
 	$data = str_replace('{ ', '{', $data);
@@ -1730,7 +1766,6 @@ public static function remove_tabs( $data )
 	$data = preg_replace( "/[ \t]/" , " " , $data );
 	return $data;
   }
-
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- SUPPRIME LES RETOURS A LA LIGNE */
 public static function inline_string( $string )
@@ -1828,7 +1863,6 @@ public static function rgb_to_hexa( $couleur )
 
 	return $r.$g.$b;
   }
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOI L'INTENSITÉ DE LA COULEUR ( sombre 0 <--> claire 255 ) */
 public static function intensite_couleur( $hex )
   {
@@ -1946,7 +1980,6 @@ public static function https( $set=1 , $return=false )
 	*/
 	$base		= parse_url( $url );
 	$chemin	= $base["host"].$base["path"];
-
 	if( ($set==1 ) AND ($base["scheme"] != "https") )
 	  {
 	  	$new_url = "https://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"];
@@ -1974,21 +2007,156 @@ public static function https( $set=1 , $return=false )
   }
 
 
-/* --------------------------------------------------------------------------------------------------------------------------------------------- PROTEGE LE CODE SOURCE */
-public static function code_compressor( $content , $comments=false  , $blank_lines=false , $compression=false , $spaces=false )
+/* --------------------------------------------------------------------------------------------------------------------------------------------- VÉRIFIE SI LE FICHIER ET COMPRESSÉ */
+public static function is_minified( $file , $suffix="min" )
   {
-	if( is_file( $content ) )
+  	$ext 		= self::ext($file);
+  	$mini_file 	= preg_replace( "#.".$ext."$#" , ".".$suffix.".".$ext , $file );
+  	$return 	= array( "minified" => false, "file" => $mini_file );
+
+  	if( is_file( $file ) AND is_file( $mini_file ) AND ( filemtime( $mini_file ) > filemtime( $file ) ) )
 	  {
-		$content = fread( fopen($content, "r") , filesize($content) );
+	  	$return["minified"] = true;
 	  }
 
-	if( $comments == true)		{ $content = preg_replace( "!/\*[^*]*\*+([^/][^*]*\*+)*/!" , "" , $content); }				/* Suppression des commentaires */
-	if( $blank_lines == true)	{ $content = preg_replace( "/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/" , "\n" , $content ); }			/* Supprime les lignes vides */
-	if( $compression == true)	{ $content = str_replace( array( "\r\n" , "\r" , "\n" , "\t" ) , "" , $content ); }				/* Compression du code */
-	if( $spaces == true)		{ $content = preg_replace( "/\\s{2,}/" , " ", $content); }								/* Supprime les espace en trop (2+) */
-
-	return $content;
+  	return $return;
   }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- COMPRESSE LE CODE SOURCE (FICHIER OU CODE) */
+public static function minify( $options = array() )
+  {
+
+	/* ----------------------------------------------------------------------------------- */
+
+	$compress 	= false;
+	$filetime 	= time();
+
+
+	/* ----------------------------------------------------------------------------------- */
+
+	$default = array( 
+		"return"			=> "filename",
+		"content"			=> null,
+		"root"	 		=> "",
+		"file" 			=> "",
+		"mini_file" 		=> "",
+		"suffix"			=> "min",
+		"filetime"			=> false,
+		"comments"			=> true,
+		"blank_lines"		=> true,
+		"compression"		=> true,
+		"spaces"			=> true,
+		"extras_spaces"		=> true,
+		"infos"			=> ""
+	);
+
+	$options = is_array($options) ? array_merge( $default , $options ) : $default;
+
+
+
+	/* ----------------------------------------------------------------------------------- */
+
+	if( !empty($options["file"]) )
+	  {
+		$file = $options["file"];
+
+		if( $options["return"] == "filename" )
+		  {
+		  	if( !empty($options["mini_file"]) )
+		  	  {
+		  	  	$mini_file = $options["mini_file"];
+		  	  }
+		  	else
+		  	  {
+			  	$ext 		= self::ext($file);
+			  	$mini_file 	= preg_replace( "#.".$ext."$#" , ".".$options["suffix"].".".$ext , $file );
+		  	  }
+		  }
+
+
+	  	if( ( $options["return"] == "data" ) OR ( !is_file( $options["root"].$mini_file ) OR ( filemtime( $options["root"].$mini_file ) < filemtime( $options["root"].$file ) ) ) )
+		  {
+		  	$compress = true;
+		  	$options["content"] = fread( fopen($options["root"].$file, "r") , filesize($options["root"].$file) );
+		  }
+		else if( is_file( $options["root"].$mini_file ) )
+		  {
+			$filetime = filemtime( $options["root"].$mini_file );
+		  }
+
+	  }
+
+	else if( !empty($options["content"]) )
+	  {
+	  	$options["return"] = "data";
+		$compress = true;
+	  }
+
+
+	
+	/* ----------------------------------------------------------------------------------- */
+
+	if( $compress )
+	  {
+		/* Suppression des commentaires */
+		if( $options["comments"] == true)		{ $options["content"] = preg_replace( "!/\*[^*]*\*+([^/][^*]*\*+)*/!" , "" , $options["content"]); }
+
+		/* Supprime les lignes vides */
+		if( $options["blank_lines"] == true)	{ $options["content"] = preg_replace( "/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/" , "\n" , $options["content"] ); }
+
+		/* Compression du code */
+		if( $options["compression"] == true)	{ $options["content"] = str_replace( array( "\r\n" , "\r" , "\n" ) , "" , $options["content"] ); }
+
+		/* Supprime les espaces en trop (2+) */
+		if( $options["spaces"] == true)		{
+									  $options["content"] = str_replace( array( "\t" ) , " " , $options["content"] );
+									  $options["content"] = preg_replace( "/\\s{2,}/" , " ", $options["content"]);
+									}
+
+		/* Supprime les espaces avant et après les " : { } ( ) " ..." */
+		if( $options["extras_spaces"] == true)	{
+									  $options["content"] = preg_replace( "/ ?(:|;|,|=|{|}|\[|\]) ?/i" , "$1" , $options["content"] );
+									  $options["content"] = preg_replace( "/\( ?/i" , "(" , $options["content"] );
+									  $options["content"] = preg_replace( "/ ?\)/i" , ")" , $options["content"] );
+									  $options["content"] = preg_replace( "/\n}/i" , "}" , $options["content"] );
+									  $options["content"] = preg_replace( "/{\n/i" , "{" , $options["content"] );
+									}
+
+
+		/* TRIM */
+		$options["content"] = trim( $options["content"] );
+
+
+		/* Ajout des commentaires en haut du fichier compressé */
+		if( !empty($options["infos"]) )		{ $options["content"] = $options["infos"]."\n".$options["content"]; }
+
+
+
+		/* Écriture du fichier */
+
+		if( isset($mini_file) )
+		  {
+		  	file_put_contents( $options["root"].$mini_file , $options["content"] );
+		  }
+
+	  }
+
+
+	/* ----------------------------------------------------------------------------------- */
+
+	if( isset($mini_file) AND ( $options["return"] != "data" ) )
+	  {
+	  	return $mini_file.( $options["filetime"] == true ? "?t=".$filetime : "" );
+	  }
+	else
+	  {
+		return $options["content"];
+	  }
+
+
+  }
+
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- AFFICHE LE CODE SOURCE LE CODE SOURCE */
@@ -2010,7 +2178,6 @@ public static function show_source_code( $data , $ligne=null )
 	$nb_lignes		= count( $data );
 	$nb_chars		= strlen( $nb_lignes );
 	$i			= 0;
-
 	foreach( $data as $line )
 	  {
 		$i++;
@@ -2077,7 +2244,6 @@ public static function format_prix( $prix , $bank=false , $no_zeros=false )
 		  {
 		  	$prix = substr( $prix , 0 , -3 );
 		  }
-
 	  	return $prix;
   	  }
 	else
@@ -2115,7 +2281,6 @@ public static function is_private_ip( $ip=NULL  )
 	  {
 		$ip = self::ip();
 	  }
-
 	if(      preg_match( "#^10\.[0-255]\.[0-255]\.[0-255]#" , $ip ) 
 		OR preg_match( "#^172\.[0-16]\.[0-255]\.[0-255]#" , $ip )
 		OR preg_match( "#^192\.168\.[0-255]\.[0-255]#" , $ip )
@@ -2204,16 +2369,16 @@ public static function is_robot( $user_agent=null , $host=null  )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOIE LE NOM DE L'OS */
 public static function os( $ua=null )
   {
-	/* Updated : 05/06/2018 */
+	/* Updated : 06/11/2019 */
 
 	$ua = ( $ua !== null ) ? $ua : self::ua();
 
 	/* --- WINDOWS */
 	if(preg_match("#Windows 2000#i", $ua)) 						{$os = "Windows 2000";}
-	else if(preg_match("#Windows CE|WinCE#i", $ua)) 					{$os = "Windows CE";}
-	else if(preg_match("#Windows ME|WinME#i", $ua)) 					{$os = "Windows ME";}
-	else if(preg_match("#Windows 98|Win98#i", $ua)) 					{$os = "Windows 98";}
-	else if(preg_match("#Windows 95|Win95#i", $ua)) 					{$os = "Windows 95";}
+	else if(preg_match("#Windows CE|WinCE#i", $ua)) 				{$os = "Windows CE";}
+	else if(preg_match("#Windows ME|WinME#i", $ua)) 				{$os = "Windows ME";}
+	else if(preg_match("#Windows 98|Win98#i", $ua)) 				{$os = "Windows 98";}
+	else if(preg_match("#Windows 95|Win95#i", $ua)) 				{$os = "Windows 95";}
 	else if(preg_match("#Windows XP|WinXP|Windows NT 5.#i", $ua))		{$os = "Windows XP";}
 	else if(preg_match("#Windows NT 5.2#i", $ua)) 					{$os = "Windows Server 2003";}
 	else if(preg_match("#Windows NT 6.0#i", $ua)) 					{$os = "Windows Vista";}
@@ -2223,19 +2388,20 @@ public static function os( $ua=null )
 	else if(preg_match("#Windows NT 10.0#i", $ua)) 					{$os = "Windows 10";}
 	else if(preg_match("#Win16#i", $ua)) 						{$os = "Windows 3.11";}
 	else if(preg_match("#Windows NT 4.0|WinNT4.0|WinNT#i", $ua)) 		{$os = "Windows NT 4";}
-	else if(preg_match("#Windows NT#i", $ua)) 						{$os = "Windows NT";}
+	else if(preg_match("#Windows NT#i", $ua)) 					{$os = "Windows NT";}
 	else if(preg_match("#Windows#i", $ua)) 						{$os = "Windows";}
 
 	/* --- DEVICES */
 	else if(preg_match("#iPod#i", $ua))							{$os = "iPod";}
 	else if(preg_match("#iPad#i", $ua))							{$os = "iPad";}
-	else if(preg_match("#iPod|iPhone|Aspen#i", $ua))					{$os = "iPhone";}
+	else if(preg_match("#iPod|iPhone|Aspen#i", $ua))				{$os = "iPhone";}
 	else if(preg_match("#Android#i", $ua))						{$os = "Android";}
 	else if(preg_match("#Xbox#i", $ua))							{$os = "Xbox";}
 	else if(preg_match("#Nintendo Wii#i", $ua))					{$os = "Nintendo Wii";}
 	else if(preg_match("#BlackBerry#i", $ua))						{$os = "BlackBerry";}
 
 	/* --- MAC */
+	else if(preg_match("#Mac OS X 10.15#i", $ua))					{$os = "macOS Catalina";}
 	else if(preg_match("#Mac OS X 10.14#i", $ua))					{$os = "macOS Mojave";}
 	else if(preg_match("#Mac OS X 10.13#i", $ua))					{$os = "macOS High Sierra";}
 	else if(preg_match("#Mac OS X 10.12#i", $ua))					{$os = "macOS Sierra";}
@@ -2258,22 +2424,22 @@ public static function os( $ua=null )
 	else if(preg_match("#Ubuntu#i", $ua)) 						{$os = "Ubuntu";}
 	else if(preg_match("#Debian#i", $ua)) 						{$os = "Debian";}
 	else if(preg_match("#Fedora#i", $ua)) 						{$os = "Fedora";}
-	else if(preg_match("#CrOS#i", $ua)) 							{$os = "Chrome OS";}
-	else if(preg_match("#Suse#i", $ua)) 							{$os = "Suse";}
+	else if(preg_match("#CrOS#i", $ua)) 						{$os = "Chrome OS";}
+	else if(preg_match("#Suse#i", $ua)) 						{$os = "Suse";}
 	else if(preg_match("#Linux|X11#i", $ua)) 						{$os = "Linux";}
-	else if(preg_match("#Unix#i", $ua)) 							{$os = "Unix";}
+	else if(preg_match("#Unix#i", $ua)) 						{$os = "Unix";}
 
 	/* --- OTHERS */
 	else if(preg_match("#QNX#i", $ua)) 							{$os = "QNX";}
-	else if(preg_match("#OS/2#i", $ua)) 							{$os = "OS/2";}
-	else if(preg_match("#SunOS#i", $ua))							{$os = "SunOS";}
+	else if(preg_match("#OS/2#i", $ua)) 						{$os = "OS/2";}
+	else if(preg_match("#SunOS#i", $ua))						{$os = "SunOS";}
 	else if(preg_match("#BeOS#i", $ua))							{$os = "BeOS";}
 
 	/* --- BOTS */
 	else if(preg_match("#Googlebot#i", $ua))						{$os = "Googlebot";}
 	else if(preg_match("#Yahoo! Slurp#i", $ua))					{$os = "Yahoo Bot";}
 	else if(preg_match("#msnbot#i", $ua))						{$os = "MSN Bot";}
-	else if( self::is_robot($ua) )								{$os = "Robot";}
+	else if( self::is_robot($ua) )							{$os = "Robot";}
 
 	/* --- CARS */
 	else if(  preg_match("#Linux#i", $ua)
@@ -2666,11 +2832,10 @@ public static function need_auth( $accounts=array() , $log_errors=false )
     
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOIE LES INFORATIONS GEOIP D'UN UTILISATEUR */
 /*
-	Update : 21/12/2018
+	Update : 07/11/2019
 */
 public static function get_geoip()
   {
-	$geoip	= array();
 	$continents	= array(
 					"AF" => "Afrique",
 					"AN" => "Antarctique",
@@ -2703,15 +2868,24 @@ public static function get_geoip()
 					"B8" => "Provence-Alpes-Côte d'Azur",
 					"B9" => "Rhône-Alpes" );
 
-	$geoip["ip"]		= isset($_SERVER["GEOIP_ADDR"]) ? $_SERVER["GEOIP_ADDR"] : "";
-	$geoip["code"]		= isset($_SERVER["GEOIP_COUNTRY_CODE"]) ? $_SERVER["GEOIP_COUNTRY_CODE"] : "";
-	$geoip["continent"]	= isset($_SERVER["GEOIP_CONTINENT_CODE"]) ? ( ( isset( $continents[ $_SERVER["GEOIP_CONTINENT_CODE"] ] ) AND !empty($continents[ $_SERVER["GEOIP_CONTINENT_CODE"] ]) ) ? $continents[ $_SERVER["GEOIP_CONTINENT_CODE"] ] : $_SERVER["GEOIP_CONTINENT_CODE"] ) : "";
-	$geoip["country"]		= isset($_SERVER["GEOIP_COUNTRY_NAME"]) ? $_SERVER["GEOIP_COUNTRY_NAME"] : "";
-	$geoip["region"]		= isset($_SERVER["GEOIP_REGION"]) ? ( ( isset( $regions[ $_SERVER["GEOIP_REGION"] ] ) AND !empty($regions[ $_SERVER["GEOIP_REGION"] ]) ) ? $regions[ $_SERVER["GEOIP_REGION"] ] : $_SERVER["GEOIP_REGION"] ) : "";
-	$geoip["city"]		= isset($_SERVER["GEOIP_CITY"]) ? $_SERVER["GEOIP_CITY"] : "";
-	$geoip["code_postal"]	= isset($_SERVER["GEOIP_POSTAL_CODE"]) ? $_SERVER["GEOIP_POSTAL_CODE"] : "";
-	$geoip["latitude"]		= isset($_SERVER["GEOIP_LATITUDE"]) ? $_SERVER["GEOIP_LATITUDE"] : "";
-	$geoip["longitude"]	= isset($_SERVER["GEOIP_LONGITUDE"]) ? $_SERVER["GEOIP_LONGITUDE"] : "";
+	$geoip	= array(
+				"ip"				=> ( isset($_SERVER["MMDB_ADDR"]) ? $_SERVER["MMDB_ADDR"] : ( isset($_SERVER["GEOIP_ADDR"]) ? $_SERVER["GEOIP_ADDR"] : "" ) ),
+				"continent"			=> ( isset($_SERVER["MM_CONTINENT_NAME"]) ? $_SERVER["MM_CONTINENT_NAME"] : ( isset($_SERVER["GEOIP_CONTINENT_CODE"]) ? ( ( isset( $continents[ $_SERVER["GEOIP_CONTINENT_CODE"] ] ) AND !empty($continents[ $_SERVER["GEOIP_CONTINENT_CODE"] ]) ) ? $continents[ $_SERVER["GEOIP_CONTINENT_CODE"] ] : $_SERVER["GEOIP_CONTINENT_CODE"] ) : "" ) ),
+				"code_pays"			=> ( isset($_SERVER["MM_COUNTRY_CODE"]) ? $_SERVER["MM_COUNTRY_CODE"] : ( isset($_SERVER["GEOIP_COUNTRY_CODE"]) ? $_SERVER["GEOIP_COUNTRY_CODE"] : "" ) ),
+				"pays"			=> ( isset($_SERVER["MM_COUNTRY_NAME"]) ? $_SERVER["MM_COUNTRY_NAME"] : ( isset($_SERVER["GEOIP_COUNTRY_NAME"]) ? $_SERVER["GEOIP_COUNTRY_NAME"] : "" ) ),
+				"region"			=> ( isset($_SERVER["MM_REGION_NAME"]) ? $_SERVER["MM_REGION_NAME"] : ( isset($_SERVER["GEOIP_REGION"]) ? ( ( isset( $regions[ $_SERVER["GEOIP_REGION"] ] ) AND !empty($regions[ $_SERVER["GEOIP_REGION"] ]) ) ? $regions[ $_SERVER["GEOIP_REGION"] ] : $_SERVER["GEOIP_REGION"] ) : "" ) ),
+				"code_region"		=> ( isset($_SERVER["MM_REGION_CODE"]) ? $_SERVER["MM_REGION_CODE"] : ( isset($_SERVER["GEOIP_REGION"]) ? $_SERVER["GEOIP_REGION"] : "" ) ),
+				"ville"			=> ( isset($_SERVER["MM_CITY_NAME"]) ? $_SERVER["MM_CITY_NAME"] : ( isset($_SERVER["GEOIP_CITY"]) ? $_SERVER["GEOIP_CITY"] : "" ) ),
+				"code_postal"		=> ( isset($_SERVER["MM_POSTAL_CODE"]) ? $_SERVER["MM_POSTAL_CODE"] : ( isset($_SERVER["GEOIP_POSTAL_CODE"]) ? $_SERVER["GEOIP_POSTAL_CODE"] : "" ) ),
+				"latitude"			=> ( isset($_SERVER["MM_LATITUDE"]) ? $_SERVER["MM_LATITUDE"] : ( isset($_SERVER["GEOIP_LATITUDE"]) ? $_SERVER["GEOIP_LATITUDE"] : "" ) ),
+				"longitude"			=> ( isset($_SERVER["MM_LONGITUDE"]) ? $_SERVER["MM_LONGITUDE"] : ( isset($_SERVER["GEOIP_LONGITUDE"]) ? $_SERVER["GEOIP_LONGITUDE"] : "" ) ),
+				"timezone"			=> ( isset($_SERVER["MM_TIME_ZONE"]) ? $_SERVER["MM_TIME_ZONE"] : "" ),
+				"fai"				=> ( isset($_SERVER["MM_FAI"]) ? $_SERVER["MM_FAI"] : "" )
+			  );
+
+	$geoip["code"]		= $geoip["code_pays"];
+	$geoip["country"]		= $geoip["pays"];
+	$geoip["city"]		= $geoip["ville"];
 
 	return $geoip;
   }
@@ -2947,19 +3121,20 @@ public static function print_r( $arr , $return = false , $from_print_r = false ,
   	  	$data = (array) $data;
   	  }
   
-	$html		= "";
-	$css_font	= "font-family:Monaco,monospace;font-size:12px;white-space:pre-line;";
-	$empty	= "<span style=\"".$css_font.";color:#CC0000;font-style:italic;\">(empty)</span>";
+	$html			= "";
+	$css_font		= "font-family:Monaco,monospace;font-size:11px;white-space:break-spaces;";
+	$css_border		= "border-color:#999;";
+	$empty		= "<span style=\"".$css_font.";color:#CC0000;font-style:italic;\">(empty)</span>";
 
 	if( is_array( $data ) )
 	  {
-		$html .= "<table border='1' style=\"width:100%;border-spacing:0px;border-collapse:collapse;margin-bottom:4px;\">";
+		$html .= "<table border='1' style=\"width:100%;border-spacing:0px;border-collapse:collapse;margin-bottom:4px;".$css_border."\">";
 
 		if( ( $from_print_r == true ) OR ( $show_array == true ) )
 		  {
 			$html .= "
 			<tr>
-				<td colspan='2' style=\"".$css_font.";color:#FFFFFF;background-color:#5E5750;padding:2px;\">ARRAY</td>
+				<td colspan='2' style=\"".$css_font.$css_border."color:#FFFFFF;background-color:#5E5750;padding:2px;\">ARRAY</td>
 			</tr>";
 		  }
 
@@ -2999,8 +3174,8 @@ public static function print_r( $arr , $return = false , $from_print_r = false ,
 
 				$html .= "
 				<tr>
-					<td style=\"vertical-align:top;".$css_font.";background-color:#EDEDED;padding:5px;width:20%;".$css_data_type_key."\">".$k."</td>
-					<td style=\"vertical-align:top;".$css_font.";background-color:#FFFDF4;padding:5px 1px 1px 5px;".$css_data_type_value."\">";
+					<td style=\"vertical-align:top;".$css_font.$css_border."background-color:#EDEDED;padding:5px;width:20%;".$css_data_type_key."\">".$k."</td>
+					<td style=\"vertical-align:top;".$css_font.$css_border."background-color:#FFFDF4;padding:5px 1px 1px 5px;".$css_data_type_value."\">";
 
 						if( is_numeric($v) AND ( $v === 0 ) )
 						  {
@@ -3027,7 +3202,7 @@ public static function print_r( $arr , $return = false , $from_print_r = false ,
 	  	  }
 	  	else if( $from_print_r === false )
 	  	  {
-		  	$html .= "<div style=\"".$css_font.";background-color:#EDEDED;padding:20px;color:#0000BB;white-space:pre;\">".$data."</div>";
+		  	$html .= "<div style=\"".$css_font."background-color:#EDEDED;padding:20px;color:#0000BB;white-space:pre;\">".$data."</div>";
 	  	  }
 	  	else
 	  	  {
@@ -3154,8 +3329,6 @@ public static function color_ip( $ip , $type="HEX" )
 
 	return $return;
   }
-
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE UNE COULEUR CORRESPONDANT À UNE CHAINE DE CARACTÈRES */
 public static function colorify( $str , $return = "hexa" )
   {
@@ -3195,9 +3368,6 @@ public static function colorify( $str , $return = "hexa" )
 	  }
 
   }
-
-
-
 
 
 
@@ -3432,7 +3602,6 @@ public static function url( $url = null )
 				$datas[ "data" ]	= $datas["parametres"]["client"];
 			  }
 		  }
-
 		/* -------------------------------------------------------------------------------------------- MOBILE APPS */
 	
 		else if( preg_match( "#^android-app://#i" , $url ) )
@@ -3447,8 +3616,6 @@ public static function url( $url = null )
 			  }
 			
 		  }
-
-
 		/* -------------------------------------------------------------------------------------------- SEARCH ENGINE */
 
 		else if( preg_match( "#^http(s)?://(www.)?google.#i" , $url ) AND preg_match( "#/m/search#i" , $url ) )
@@ -3834,7 +4001,6 @@ public static function url_remove_parameters( $url )
   }
 
 
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- VERIFIE SI L'EXTENSION DU DOMAINE EST VALIDE */
 public static function check_domain( $url , $return="" )
   {
@@ -4044,7 +4210,7 @@ public static function browser_is( $browsers , $ua=null )
 	$ua		= strtolower( $ua);
 
 	$browsers	= strtolower( $browsers);
-	$browsers	= explode( ":" , $browsers);
+	$browsers	= explode( "|" , $browsers);
 
 	foreach( $browsers AS $browser )
 	  {
@@ -4477,7 +4643,6 @@ $colonnes_de_tri = array(	"alpha2",
 					"nom_en",
 					"capitale" );
 										
-
 $xls = "AF	Afrique	Africa	AO	AGO	Angola	Angola	Luanda
 AF	Afrique	Africa	BF	BFA	Burkina Faso	Burkina Faso	Ouagadougou
 AF	Afrique	Africa	BI	BDI	Burundi	Burundi	Bujumbura
@@ -4875,8 +5040,6 @@ SA	Amérique du Sud	South America	VE	VEN	Venezuela	Venezuela	Caracas";
   }
 
 
-
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- DETECT LA PRESENCE D'UNE ENTETE DO NOT TRACK */
 public static function do_not_track()
   {
@@ -4911,24 +5074,117 @@ public static function is_sha1( $txt )
   }
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- FORCE LE TELECHARGEMENT D'UN FICHIER */
-public static function dl( $file , $filemane , $force = true )
+public static function dl( $file , $filename , $force = true )
   {
-    	if( $force === true )
-  	  {
-	  	header( "Content-Type: application/force-download; name=\"".$filemane."\"" ); 
-		header( "Content-Disposition: attachment; filename=\"".$filemane."\"" );
-  	  }
-	else
-  	  {
-	  	header( "Content-Type: ".self::mime_type( $file )."; name=\"".$filemane."\"" ); 
-		header( "Content-Disposition: inline; filename=\"".$filemane."\"" );
-  	  }
 
-	header( "Content-Transfer-Encoding: binary" ); 
-	header( "Content-Length: ".filesize( $file ) );
-	readfile( $file );
-  	exit;
+	if( is_file( $file ) AND is_readable($file) )
+	  {
+	  	$size 	= filesize( $file );
+		$time		= date( "r" , filemtime($file) );
+		$mime_type	= self::mime_type( $file );
+
+
+		/* ------------------------------------------------------------------------- Découpe du fichier par range */
+
+		if( isset($_SERVER["HTTP_RANGE"]) )
+		  {
+			$fichier	= fopen( $file, "rb" );
+			$start	= 0;
+			$end 		= $size - 1;
+			$c_start	= $start;
+			$c_end 	= $end;
+
+			header( "Content-type: ".$mime_type);
+			header( "Accept-Ranges: bytes" );
+			
+			list( , $range) = explode( "=" , $_SERVER["HTTP_RANGE"] , 2 );
+
+			if( strpos($range, ",") !== false )
+			  {
+				header( "HTTP/1.1 416 Requested Range Not Satisfiable" );
+				header( "Content-Range: bytes $start-$end/$size" );
+				exit;
+			  }
+			
+			if( $range == "-" )
+			  {
+				$c_start = $size - substr( $range , 1 );
+			  }
+			else
+			  {
+				$range 	= explode( "-" , $range );
+				$c_start 	= $range[0];
+				$c_end 	= ( isset($range[1]) && is_numeric($range[1]) ) ? $range[1] : $size;
+			}
+			  
+			$c_end = ($c_end > $end) ? $end : $c_end;
+
+			if ($c_start > $c_end || $c_start > $size - 1 || $c_end >= $size)
+			  {
+				header( "HTTP/1.1 416 Requested Range Not Satisfiable" );
+				header( "Content-Range: bytes $start-$end/$size" );
+				exit;
+			  }
+			
+			$start	= $c_start;
+			$end		= $c_end;
+			$length	= $end - $start + 1;
+
+			fseek($fichier, $start);
+
+
+			header( "HTTP/1.1 206 Partial Content");
+			header( "Content-Range: bytes $start-$end/$size" );
+			header( "Content-Length: ".$length );
+			$buffer = 1024 * 8;
+			
+			while( !feof($fichier) && ($p = ftell($fichier) ) <= $end )
+			  {
+				if ($p + $buffer > $end)
+				  {
+					$buffer = $end - $p + 1;
+				  }
+			
+				set_time_limit(0);
+				echo fread($fichier, $buffer);
+				flush();
+			  }
+
+			fclose($fichier);
+			exit();
+
+		  }
+
+		/* ------------------------------------------------------------------------- Envoi du fichier */
+		
+		else
+		  {
+		    	if( $force === true )
+		  	  {
+			  	header( "Content-Type: application/force-download; name=\"".$filename."\"" ); 
+				header( "Content-Disposition: attachment; filename=\"".$filename."\"" );
+		  	  }
+			else
+		  	  {
+			  	header( "Content-Type: ".$mime_type."; name=\"".$filename."\"" ); 
+				header( "Content-Disposition: inline; filename=\"".$filename."\"" );
+		  	  }
+		
+			header( "Content-Transfer-Encoding: binary" );
+			header( "Content-Length: ".$size );
+			header( "Last-Modified: $time" );
+			readfile( $file );
+		  	exit;
+		  }
+
+	  }
+
+	else
+	  {
+	  	return false;
+	  }
   }
+
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE DU FAUX TEXTE LOREM UPSUM */
@@ -4958,9 +5214,6 @@ public static function lorem_ipsum( $nb_words=0 , $lorem_first = true , $paragra
 			$text .= $data[ rand() % $nb_data ]." ";
 		  }
 	  }
-
-
-
 
 
 	return $text;
@@ -5237,7 +5490,6 @@ public static function og_description( $texte )
 public static function degrade_couleurs( $options = array() )
   {
 	/* --------------------------- */
-
 	$default = array( 
 		"from"	=> "FFFFFF",
 		"to" 		=> "000000",
@@ -5298,7 +5550,6 @@ public static function degrade_couleurs( $options = array() )
 	  }
 	  
 	/* --------------------------- */
-
 	return $gradient;
 	
 	/* --------------------------- */
@@ -5403,7 +5654,6 @@ public static function eclaircir( $couleur , $coef = 2 )
 
 
 
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LA VALEUR MAXI POUR L'UPLOAD */
 public static function max_upload_size( $human = false )
   {
@@ -5487,7 +5737,6 @@ public static function code_commande( $code = null , $simple = false )
 	  {
 	  	return "";
 	  }
-
   }
 
 
@@ -5832,7 +6081,6 @@ public static function braille( $text )
 /**
 * Supprime les tableaux vides
 */
-
 public static function json_to_array( $json )
   {
 	$json = str_replace( '{}', '""' , $json );
@@ -5892,7 +6140,6 @@ public static function csv( $data , $delimiter = ";" , $remove_headers = true )
 	alter table ta_table convert to character set 'binary';  	-- neutralisation de l'encodage
 	alter table ta_table convert to character set 'utf8';    	-- définition de l'encodage.
 */
-
 public static function sql_utf8_replace( $table , $colonne )
   {
 	$sql = "
@@ -5945,6 +6192,25 @@ public static function is_ajax()
 
 
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CHECK SI IL Y A UNE IFRAME DANS UN BOUT DE CODE */
+	
+public static function got_iframes( $html )
+  {
+  	$html = self::text_compressor( $html );
+	preg_match( "/<iframe.*src=\"(.*)\".*><\/iframe>/isU" , $html , $matches );
+	return $matches;
+  }
+
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- GENERE UN ID UNIQUE */
+	
+public static function unik_id( $prefix = "id_" )
+  {
+  	return $prefix.self::microtime(true).rand( 100 , 999 );
+  }
 
 
 
@@ -6043,8 +6309,6 @@ public static function encrypt_decrypt( $action , $string )
 	
 	return $output;
   }
-
-
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LA TAILLE D'UN FICHIER DISTANT ( FTP / HTTP )
 FROM : http://fr.php.net/manual/fr/function.filesize.php#71098
@@ -6194,7 +6458,6 @@ public static function user_agent( $user_agent=null , $return=false  )
 			  }
 		  }
 	  }
-
 
 	if( preg_match( "/(iPod|iPhone|iPad|Aspen)/i" , $ua , $matches , PREG_OFFSET_CAPTURE) )
 	  {
@@ -6654,13 +6917,13 @@ public static function ean13_check_digit( $digits )
 	$digits =(string)$digits;
 
 	/* 1. Add the values of the digits in the even-numbered positions: 2, 4, 6, etc. */
-	$even_sum = $digits{1} + $digits{3} + $digits{5} + $digits{7} + $digits{9} + $digits{11};
+	$even_sum = $digits[1] + $digits[3] + $digits[5] + $digits[7] + $digits[9] + $digits[11];
 
 	/* 2. Multiply this result by 3.
 	$even_sum_three = $even_sum * 3;
 
 	/* 3. Add the values of the digits in the odd-numbered positions: 1, 3, 5, etc. */
-	$odd_sum = $digits{0} + $digits{2} + $digits{4} + $digits{6} + $digits{8} + $digits{10};
+	$odd_sum = $digits[0] + $digits[2] + $digits[4] + $digits[6] + $digits[8] + $digits[10];
 
 	/* 4. Sum the results of steps 2 and 3.
 	$total_sum = $even_sum_three + $odd_sum;
@@ -6866,14 +7129,13 @@ public static function distance_gps( $lat1, $lng1 , $lat2=null, $lng2=null )
   {
 	if( $lat2 == null )
 	  {
-		$lat2 = isset($_SERVER["GEOIP_LATITUDE"]) ? $_SERVER["GEOIP_LATITUDE"] : "50.633518061238725";
+		$lat2 = ( isset($_SERVER["MM_LATITUDE"]) ? $_SERVER["MM_LATITUDE"] : ( isset($_SERVER["GEOIP_LATITUDE"]) ? $_SERVER["GEOIP_LATITUDE"] : "50.633518061238725" ) );
 	  }
 
 	if( $lng2 == null )
 	  {
-		$lng2 = isset($_SERVER["GEOIP_LONGITUDE"]) ? $_SERVER["GEOIP_LONGITUDE"] : "3.0689701437950134";
+		$lng2 = ( isset($_SERVER["MM_LONGITUDE"]) ? $_SERVER["MM_LONGITUDE"] : ( isset($_SERVER["GEOIP_LONGITUDE"]) ? $_SERVER["GEOIP_LONGITUDE"] : "3.0689701437950134" ) );
 	  }
-
 
 	$earth_radius	= 6378137;   		/* Terre = sphère de 6378km de rayon */
 	$rlo1			= deg2rad($lng1);
@@ -6903,7 +7165,6 @@ public static function distance_gps( $lat1, $lng1 , $lat2=null, $lng2=null )
 
 	return $distance;
   }
-
 
 
 
@@ -7167,7 +7428,6 @@ public static function int2str( $a )
   }
 
 
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CALCUL UNE EQUATION DANS UNE CHAINE DE CARACTÈRES
  http://php.net/manual/fr/function.eval.php#92603
 */
@@ -7190,8 +7450,6 @@ public static function matheval( $equation )
 	return $return;
   }
 
-
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- VÉRIFIE SI LA CHAINE EST AU FORMAT JSON
  http://stackoverflow.com/a/6041773/851728
 */
@@ -7201,8 +7459,6 @@ public static function is_json( $data )
 	json_decode( $data );
 	return (json_last_error() == JSON_ERROR_NONE);
   }
-
-
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- PARSE UN FICHIER CSS ET RETOURNE UN TABLEAU AVEC LES CLASSES ET ID
  https://stackoverflow.com/posts/6589386/revisions
@@ -7237,12 +7493,9 @@ public static function parse_css( $file )
 		  }
 
 	  }
-
     return $result;
 
   }
-
-
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES INFOS D'UNE URL D'UN MEDIA SOCIAL (Youtube, Instagram, etc...)
  https://stackoverflow.com/a/36876681
@@ -7269,7 +7522,6 @@ public static function get_social_url_infos( $url )
 	  }
 	
 	/* ------------------------------- INSTAGRAM */   /* REVOIR L'IFRAME ... */
-
 	preg_match( "/^(?:https?:\/\/)?(?:www\.)?instagram.com\/p\/(.[a-zA-Z0-9\_]*)/" , $url , $match );
 	if( $match && strlen($match[0]) )
 	  {
@@ -7309,7 +7561,6 @@ public static function get_social_url_infos( $url )
   }
 
 
-
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CONVERTIT UN TABLEAU PHP EN XML
 */
 
@@ -7326,15 +7577,12 @@ public static function array_to_xml( $array, $wrap="root" )
 		$xml .= "\t<".$key.">".htmlspecialchars(trim($value))."</".$key.">\n";
 	  }
 
-
 	if( $wrap != null )
 	  {
 		$xml .= "\n</".$wrap.">\n";
 	  }
-
 	return $xml;
   } 
-
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- VÉRIFIE SI UNE URL EXISTE
@@ -7364,13 +7612,65 @@ public static function url_exists( $url )
   }  
 
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------- STREAM UN FICHIER
+Modified from : https://stackoverflow.com/questions/6914912/streaming-a-large-file-using-php
+*/
 
+public static function stream_file( $file , $retbytes = true , $cache = true )
+  {
+	if( is_file( $file ) AND is_readable($file) )
+  	  {
+		$mime_type	= self::mime_type( $file );
+		$buffer 	= "";
+		$cnt    	= 0;
+		$handle 	= fopen( $file , "rb" );
 
+		header( "Content-Type: ".$mime_type );
 
+		if( $cache != false )
+		  {
+			$duree 	= is_numeric($cache) ? $cache : 864000; /* 864000 secondes : 10 jours */
+			$expires	= gmdate("D, d M Y H:i:s", time() + $duree) . " GMT";
 
+			header( "Expires: $expires" );
+			header( "Pragma: cache" );
+			header( "Cache-Control: max-age=$duree" );
 
+		  }
 
+		if( $handle === false )
+		  {
+			return false;
+		  }
 
+		while( !feof($handle) )
+		  {
+			$buffer = fread( $handle , ( 1024 * 1024 ) );
+			echo $buffer;
+			ob_flush();
+			flush();
+
+			if( $retbytes )
+			  {
+				$cnt += strlen( $buffer );
+			  }
+		  }
+
+		$status = fclose($handle);
+
+		if ($retbytes && $status)
+		  {
+			return $cnt;
+		  }
+
+		return $status;
+
+  	  }
+  	else
+  	  {
+  	  	return false;
+  	  }
+  }
 
 
 

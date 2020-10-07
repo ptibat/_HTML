@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 18/02/2013
-* Last modif	: 15/04/2019 17:30
+* Last modif	: 03/03/2020 15:50
 * Description	: Classe de gestion de base de données SQL // PDO
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -18,9 +18,11 @@ class database {
 	debug( $return = null )
 	delete( $query )
 	enum_values( $table , $field )
+	exec_time( $wat )
 	get( $query )
 	get_array( $query , $table=false )
 	get_colonnes( $table )
+	get_error()
 	insert( $query )
 	last_error()
 	pagination( $query , $nb_results_par_page , $nav_link , $current , $id="pagination" , $class="pagination" )
@@ -35,9 +37,10 @@ class database {
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- VARIABLES */
 
-	public $pdo			= null;
-	public $options		= array();
-	public $current_query	= "";
+	public $pdo				= null;
+	public $options			= array();
+	public $current_query		= "";
+	public $execution_time		= 0;
 	public $last_error		= array( "time" => "" , "error" => "" );
 
 
@@ -47,7 +50,7 @@ public function __construct( $options = array() )
 	$default = array( 
 		"driver"		=> "mysql",
 		"host"		=> "localhost",
-		"file"			=> "",			/* Pour fichier sqlite */
+		"file"		=> "",			/* Pour fichier sqlite */
 		"port"		=> 3306,
 		"database"		=> "",
 		"user" 		=> null,
@@ -58,12 +61,12 @@ public function __construct( $options = array() )
 
 	$options = is_array($options) ? array_merge( $default , $options ) : $default;
 
-
 	$strrpos = strrpos( $options["host"] , ":" );
 	if( $strrpos > 4  )
 	  {
-		$explode 		= print_r( explode( ":" , preg_replace( "#http(s?)://#" , "" , $options["host"] ) ) );
-		$this->port		= $explode[1];
+		$explode 		= explode( ":" , preg_replace( "#http(s?)://#" , "" , $options["host"] ) );
+		$options["host"]	= $explode[0];
+		$options["port"]	= $explode[1];
 	  }
 
 	$this->options = $options;
@@ -107,14 +110,16 @@ private function database_connect()
 		  {
 			$this->pdo = new PDO(
 					$this->options["driver"]
-									.( !empty($this->options["host"]) ? ":host=".$this->options["host"] : "" )
+									.( !empty($this->options["host"]) ? ":host=".$this->options["host"].":".$this->options["port"] : "" )
 									.( !empty($this->options["database"]) ? ";dbname=".$this->options["database"] : "" ),
 					
 					$this->options["user"],
 					$this->options["password"],
 					array(
 						PDO::ATTR_PERSISTENT 		=> $this->options["persistant"],
-						PDO::MYSQL_ATTR_FOUND_ROWS 	=> true
+						PDO::MYSQL_ATTR_FOUND_ROWS 	=> true,					/* ERROR POSSIBLE */
+						PDO::ATTR_ERRMODE			=> PDO::ERRMODE_EXCEPTION,
+						PDO::ATTR_DEFAULT_FETCH_MODE	=> PDO::FETCH_ASSOC
 					)
 			);
 
@@ -125,47 +130,20 @@ private function database_connect()
 			$this->pdo->exec("set names ".$this->options["charset"] );
 		  }
 
+
+
+		/* ----------------------------------------------  */
+		
+		$this->clear_login();
+
+		/* ---------------------------------------------- */
+		
 		return true;
 
 	  }
 	catch( PDOException $e )
 	  {
-		global $_HTML;
-	  
-		if( isset($_HTML["administrator"]) AND functions::check_email($_HTML["administrator"]) )
-		  {
-			$error  = "\nErreur de connexion au serveur de bases de données";
-			$error .= "\n----------------------------------------------------------";
-			$error .= "\n";
-			$error .= "\nDATE :       ".date( "d/m/Y H:i:s" );
-			$error .= "\nMicrotime :  ".microtime();
-			$error .= "\nURL :        http".(  ( isset($_SERVER["HTTPS"]) AND ( $_SERVER["HTTPS"] === "on" ) ) ? "s" : "" )."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"];
-			$error .= "\nDRIVER :     ".$this->options["driver"];
-			$error .= "\nUSER :  	  ".str_pad( "" , strlen( $this->options["user"] ) , "*" ).substr( $this->options["user"] , -3 );
-			$error .= "\nPASSWORD :   ".str_pad( "" , strlen( $this->options["password"] ) , "*" ).substr( $this->options["password"] , -3 );
-			$error .= "\nHOST :       ".$this->options["host"];
-			$error .= "\nDATABASE :   ".$this->options["database"];
-			$error .= "\nERROR :      \n\n".$e->getMessage();
-			$error .= "\n";
-			
-			error_log( $error , 1 , $_HTML["administrator"] );
-		  }
-
-		if( $_HTML["dev"] == true )
-		  {
-			echo "<html><body style='margin:0;padding:20px 20px 40px 20px;font-family:monospace;font-size:14px;color:#9b1515;background-color:#F7EDED'><b>Erreur serveur</b><br />".$e->getMessage()."</body></html>";
-		  }
-		else
-		  {
-	  		echo "E.";
-		  	/*
-		  		$_HTML["errors"][] = "Erreur serveur : ".$e->getMessage();
-				return false;
-		  	*/
-		  }
-
-		exit;
-
+	  	$this->error($e);
 	  }
 
   }
@@ -175,6 +153,73 @@ private function database_disconnect()
   {
 	$this->pdo = null;
   }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- DECONNEXION DE LA BASE DE DONNEES */
+private function error( $e )
+  {
+	global $_HTML;
+
+	if( isset($_HTML["administrator"]) AND functions::check_email($_HTML["administrator"]) )
+	  {
+		$error  = "\nErreur de connexion au serveur de bases de données";
+		$error .= "\n----------------------------------------------------------";
+		$error .= "\n";
+		$error .= "\nDATE :       ".date( "d/m/Y H:i:s" );
+		$error .= "\nMicrotime :  ".microtime();
+		$error .= "\nURL :        http".(  ( isset($_SERVER["HTTPS"]) AND ( $_SERVER["HTTPS"] === "on" ) ) ? "s" : "" )."://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"];
+		$error .= "\nDRIVER :     ".$this->options["driver"];
+		$error .= "\nUSER :  	  ".str_pad( "" , strlen( $this->options["user"] ) , "*" ).substr( $this->options["user"] , -3 );
+		$error .= "\nPASSWORD :   ".str_pad( "" , strlen( $this->options["password"] ) , "*" ).substr( $this->options["password"] , -3 );
+		$error .= "\nHOST :       ".$this->options["host"];
+		$error .= "\nDATABASE :   ".$this->options["database"];
+		$error .= "\nERROR :      \n\n".$e->getMessage();
+		$error .= "\n";
+		
+		error_log( $error , 1 , $_HTML["administrator"] );
+	  }
+
+	$message = "";
+
+	if( isset($_HTML["dev"]) AND ( $_HTML["dev"] == true ) )
+	  {
+		$message .= "<b>Erreur serveur</b><br />".$e->getMessage()."<br /><br />";
+	  }
+
+	if( isset($_HTML["debug"]) AND ( $_HTML["debug"] == true ) )
+	  {
+		$message .= "<br /><b>DEBUG :</b><br /><br />".$this->debug(1)."<br /><br />";
+	  }
+
+
+	if( $message != "" )
+	  {
+	  	$message = "<html><body style='margin:0;padding:20px 20px 40px 20px;font-family:monospace;font-size:14px;color:#9b1515;background-color:#F7EDED'>".$message."</body></html>";
+	  }
+	else
+	  {
+  		$message = "E.";
+	  	/*
+	  		$_HTML["errors"][] = "Erreur serveur : ".$e->getMessage();
+			return false;
+	  	*/
+	  }
+
+
+  	echo $message;
+	exit;
+
+
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- PROTECTION : RESET DES IDENTIFIANTS */
+public function clear_login()
+  {
+	$this->options["user"] 		= "";
+	$this->options["password"]	= "";
+  }
   
   
   
@@ -182,7 +227,7 @@ private function database_disconnect()
 public function last_error()
   {
   	$this->last_error["time"]	= functions::microtime();
-  	$this->last_error["error"]	= $this->pdo->errorInfo()[2];
+  	$this->last_error["error"]	= $this->get_error()["msg"];
   	return $this->last_error;
   }
 
@@ -206,36 +251,54 @@ public function query_exec( $query )
 public function query( $query , $num=false )
   {
   	$data = array(
-  		"ok"	 	=> false,
-  		"nb" 		=> 0,
-  		"data" 	=> array(),
-  		"msg" 	=> "",
-  		"query" 	=> $query
+  		"ok"	 		=> false,
+  		"execution_time" 	=> 0,
+  		"nb" 			=> 0,
+  		"data" 		=> array(),
+  		"msg" 		=> "",
+  		"query" 		=> $query,
   	);
 
-  	$query = $this->query_exec( $query );
-
-	if( $query )
+	try
 	  {
-	  	$data["ok"]		= true;
-	  	$data["data"]	= $query->fetchAll( ( $num === true ) ? PDO::FETCH_NUM : PDO::FETCH_ASSOC );
-	  	$data["nb"]		= ( $this->options["driver"] == "sqlite" ) ? count( $data["data"] ) : $query->rowCount();
-	  }
-	else
-	  {
-	  	$error 		= $this->pdo->errorInfo();
-	  	$error 		= $error[2];
+	  	$this->exec_time("start");
 
-	  	$data["msg"]	= "Erreur de requête : ".$error;
+	  	$query = $this->query_exec( $query );
+		
+
+		if( $query )
+		  {
+		  	$data["ok"]		= true;
+		  	$data["data"]	= $query->fetchAll( ( $num === true ) ? PDO::FETCH_NUM : PDO::FETCH_ASSOC );
+		  	$data["nb"]		= ( $this->options["driver"] == "sqlite" ) ? count( $data["data"] ) : $query->rowCount();
+		  }
+		else
+		  {
+		  	$error 		= $this->pdo->errorInfo();
+		  	$error 		= $error[2];
+
+		  	$data["msg"]	= "Erreur de requête : ".$error;
+		  }
+	  	
+	  	$this->exec_time("end");
+
+	  	$data["execution_time"] = $this->execution_time;
+
+
+		return $data;
 	  }
-  	
-	return $data;
+	catch( PDOException $e )
+	  {
+	  	$this->error($e);
+	  }
   }
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- EXECUTE UNE REQUETE ET RENVOI UNE SEULE LIGNE */
 public function row( $query , $num=false )
   {
+  	$this->exec_time("start");
+  	
   	$query = $this->query_exec( $query );
 
 	if( $query )
@@ -247,6 +310,8 @@ public function row( $query , $num=false )
 	  	$data = "Erreur de requête : ".$this->last_error()["error"];
 	  }
 
+  	$this->exec_time("end");
+
 	return $data;
   }
   
@@ -255,16 +320,23 @@ public function row( $query , $num=false )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- INSERTION DE DONNÉES DANS UNE TABLE */
 public function insert( $query )
   {
+  	$this->exec_time("start");
+  	
+  	$return = false;
+
   	if( $this->query_exec( $query ) )
   	  {
   	  	$id = $this->pdo->lastInsertId();
-		return ( !empty($id) AND is_numeric($id) AND ( $id > 0 ) ) ? $id : true;
+		$return = ( !empty($id) AND is_numeric($id) AND ( $id > 0 ) ) ? $id : true;
   	  }
 	else
 	  {
 	  	$this->last_error();
-		return false;
 	  }
+
+  	$this->exec_time("end");
+  	
+	return $return;
   }
   
   
@@ -272,15 +344,22 @@ public function insert( $query )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- MISE A JOUR DE DONNÉES */
 public function update( $query )
   {
+  	$this->exec_time("start");
+  	
+  	$return = false;
+
   	if( $q = $this->query_exec( $query ) )
   	  {
-		return $q->rowCount();
+		$return = $q->rowCount();
   	  }
 	else
 	  {
 	  	$this->last_error();
-		return false;
 	  }
+
+  	$this->exec_time("end");
+  	
+	return $return;
   }
   
   
@@ -288,15 +367,22 @@ public function update( $query )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- SUPPRESSION DE LA BASE DE DONNÉES */
 public function delete( $query )
   {
+  	$this->exec_time("start");
+  	
+  	$return = false;
+
   	if( $q = $this->query_exec( $query ) )
   	  {
-		return $q->rowCount();
+		$return = $q->rowCount();
   	  }
 	else
 	  {
 	  	$this->last_error();
-		return false;
 	  }
+
+  	$this->exec_time("end");
+  	
+	return $return;
   }
   
   
@@ -319,6 +405,8 @@ public function protect( $string )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE UN RÉSULTAT UNIQUE */
 public function get( $query )
   {
+  	$this->exec_time("start");
+
   	$data		= "";
   	$query	= $this->query_exec( $query );
 
@@ -334,6 +422,8 @@ public function get( $query )
 
 	  	echo "Erreur de requête : ".$error;exit;
 	  }
+  	
+  	$this->exec_time("end");
   	
 	return $data;
   }
@@ -407,24 +497,19 @@ public function get_colonnes( $table )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES ERREURS */
 public function debug( $return = null )
   {
-  	$infos = array(
-  				"query" 	=> $this->current_query,
-  				"error" 	=> ( $this->pdo->errorInfo()[0] > 0 ) ? true : false,
-  				"error_txt"	=> ( $this->pdo->errorInfo()[0] > 0 ) ? $this->pdo->errorInfo()[2] : ""
-  		   );
-
+	$error 	= $this->get_error();
 	$html		= "";
 	$tpl_titre	= "<div style='padding:12px 20px;background:#E27A7A;color:#fff;white-space:pre-line;font-family:monospace;font-size:15px;'>{%DATA%}</div>";
 	$tpl_data	= "<div style='padding:20px;margin-bottom:40px;background:#FCF4F4;color:#AA1111;white-space:pre-wrap;font-family:monospace;font-size:13px;'>{%DATA%}</div>";
 	
-	if( $infos["error"] === true )
+	if( $error["state"] === true )
 	  {
 		$html .= str_replace( "{%DATA%}" , "ERREUR" , $tpl_titre );
-		$html .= str_replace( "{%DATA%}" , $infos["error_txt"] , $tpl_data );
+		$html .= str_replace( "{%DATA%}" , $error["msg"] , $tpl_data );
 	  }
 
 	$html .= str_replace( "{%DATA%}" , "REQUÊTE" , $tpl_titre );
-	$html .= str_replace( "{%DATA%}" , $infos["query"] , $tpl_data );
+	$html .= str_replace( "{%DATA%}" , $this->current_query , $tpl_data );
 
 	if( is_array( $this->last_error ) AND isset($this->last_error["time"]) AND isset($this->last_error["error"]) AND !empty($this->last_error["error"]) )
 	  {
@@ -439,7 +524,7 @@ public function debug( $return = null )
   	  }
   	else if( $return === 2 )
   	  {
-		return $infos;
+		return $error;
   	  }
 	else
 	  {
@@ -682,6 +767,54 @@ public function get_values( $query )
 	return $return;
   }
 
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES RESULTATS D'UNE SEUL COLONNE SOUS FORME DE TABLEAU */
+public function exec_time( $wat )
+  {
+	if( $wat == "start" )
+	  {
+	  	$this->execution_time = microtime( true );
+	  }
+	else if( $wat == "end" )
+	  {
+	  	$this->execution_time = number_format( ( microtime( true ) - $this->execution_time ) , 10 );
+	  }
+	else
+	  {
+	  	$this->execution_time = 0;
+	  }
+  }
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES RESULTATS D'UNE SEUL COLONNE SOUS FORME DE TABLEAU */
+public function get_error()
+  {
+  	$return = array(
+  		"state" 	=> false,
+  		"msg"	=> "",
+  		"data"	=> array()
+  	);
+
+	if( method_exists( $this->pdo , "errorInfo" ) )
+	  {
+		$error = $this->pdo->errorInfo();
+
+		if( is_array($error) AND !empty($error) )
+		  {
+		  	$return = array(
+		  		"state" 	=> true,
+		  		"msg"		=> ( ( isset($error[2]) AND !empty($error[2]) ) ? $error[2] : "" ),
+		  		"data"	=> $error
+		  	);
+		  }
+	  }
+
+
+	return $return;
+  }
+
   
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- DESTRUCTEUR */
@@ -691,8 +824,6 @@ public function __destruct()
   }
 
 }
-
-
 
 
 

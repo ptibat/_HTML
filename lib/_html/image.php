@@ -3,7 +3,7 @@
 /** ----------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 07/05/2007
-* Last modif	: 14/02/2019 17:00
+* Last modif	: 08/06/2020 10:05
 * Description	: Classe de fonctions pour la manipulation d'images
 -------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -25,12 +25,25 @@ class image {
 	is_animated_gif( $filename )
 	palette_de_couleurs( $ressource , $espacement=null , $distinct=true , $output=false , $show_matrix=false , $pixelize=false )
 	pixelize( $file , $destination=null , $nb_pixel_width=30 )
-	resize( $ressource , $size , $destination=null , $crop=false , $quality=100 , $square=false , $imageinterlace=true , $copyright=null , $noise_correction=true , $fix_orientation=true )
-	resize_get_sizes( $src_largeur , $src_hauteur , $size , $square=null )
+	resize( array( 
+		"ressource"			=> null,
+		"size" 			=> null,
+		"destination" 		=> null,
+		"upscale"			=> false,
+		"retina"			=> false,
+		"crop" 			=> true,
+		"quality"			=> 100,
+		"sharpen"			=> false,
+		"square"			=> false,
+		"imageinterlace"		=> true,
+		"copyright"			=> null,
+		"noise_correction"	=> true,
+		"fix_orientation"		=> true
+	) );
+	resize_get_sizes( $src_largeur , $src_hauteur , $size , $square=null , $upscale=false )
 	rotate( $file , $angle=null , $output=null )
 	square_image( $src , $out=null , $size=null )
 	svg_sizes( $data )
-
 
 */
 
@@ -67,13 +80,13 @@ public static function get_image( $file )
 		  {
 			case "jpg" :	$ressource	= imagecreatefromjpeg( $file );	break;
 			case "jpeg" :	$ressource	= imagecreatefromjpeg( $file );	break;
-			case "png" :	$ressource	= imagecreatefrompng( $file );		break;
+			case "png" :	$ressource	= imagecreatefrompng( $file );	break;
 			case "webp" :	$ressource	= imagecreatefromwebp( $file );	break;
-			case "gif" :	$ressource	= imagecreatefromgif( $file );		break;
-			case "xbm" :	$ressource	= imagecreatefromxbm( $file );		break;
-			case "xpm" :	$ressource	= imagecreatefromxpm( $file );		break;
+			case "gif" :	$ressource	= imagecreatefromgif( $file );	break;
+			case "xbm" :	$ressource	= imagecreatefromxbm( $file );	break;
+			case "xpm" :	$ressource	= imagecreatefromxpm( $file );	break;
 			case "gd" :		$ressource	= imagecreatefromgd( $file );		break;
-			case "gd2" :	$ressource	= imagecreatefromgd2( $file );		break;
+			case "gd2" :	$ressource	= imagecreatefromgd2( $file );	break;
 			case "image" :	$ressource	= imagecreatefromwbmp( $file );	break;
 		  }
 	  }
@@ -93,12 +106,41 @@ public static function get_image( $file )
 
 
 /* ----------------------------------------------------------------------------------------------------------------------------- REDIMENSIONNE UNE IMAGE */
-public static function resize( $ressource , $size , $destination=null , $crop=false , $quality=100 , $square=false , $imageinterlace=true , $copyright=null , $noise_correction=true , $fix_orientation=true )
+/* OLD : resize( $ressource , $size , $destination=null , $crop=false , $quality=100 , $square=false , $imageinterlace=true , $copyright=null , $noise_correction=true , $fix_orientation=true ) */
+
+public static function resize( $options = array() )
   {
+	/* ----------------------------------------------------------------------------------- OPTIONS */
+	
+	$default = array( 
+		"ressource"			=> null,
+		"size" 			=> null,
+		"destination" 		=> null,
+		"upscale"			=> false,
+		"retina"			=> false,
+		"crop" 			=> true,
+		"quality"			=> 100,
+		"sharpen"			=> false,
+		"square"			=> false,
+		"imageinterlace"		=> true,
+		"copyright"			=> null,
+		"noise_correction"	=> true,
+		"fix_orientation"		=> true
+	);
+
+
+	$options = is_array($options) ? array_merge( $default , $options ) : $default;	
+
+	/* ----------------------------------------------------------------------------------- VARIABLES */
+	
 	/*$output		= ( $destination === null ) ? $ressource : $destination; */
+	$ressource		= $options["ressource"];
+	$size			= $options["size"];
+	$destination	= $options["destination"];
+	$copyright		= $options["copyright"];
 	$file			= null;
 	$ext			= strtolower(substr(strrchr($ressource,"." ),1));
-	
+
 
 	/* -------------------------------------------------------------- Ressource */
 	
@@ -107,7 +149,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 		if( !is_file( $ressource ) ) { return false; }
 		
 		$file = $ressource;
-		
+
 		switch( $ext )
 		  {
 			case "jpg" :	$ressource	= imagecreatefromjpeg( $ressource );	break;
@@ -123,9 +165,9 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 
 	/* -------------------------------------------------------------- Orientation */
 
-	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND !is_null($file) AND $fix_orientation )
+	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND !is_null($file) AND $options["fix_orientation"] )
 	  {
-		$exif = exif_read_data( $file );
+		$exif = @exif_read_data( $file );
 		
 		if( !empty($exif["Orientation"]) )
 		  {	
@@ -138,11 +180,24 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 		  }
 	  }
 
-		
-	/* -------------------------------------------------------------- Sizes */
 
-	$src_largeur		= imagesx($ressource);
-	$src_hauteur	= imagesy($ressource);
+	/* -------------------------------------------------------------- Original Sizes */
+	
+	if( ( $ext == "gif" ) AND is_file($options["ressource"]) )
+	  {
+	  	$image_size		= getimagesize( $options["ressource"] );
+		$src_largeur	= $image_size[0];
+		$src_hauteur	= $image_size[1];
+	  }
+	else
+	  {
+		$src_largeur	= imagesx($ressource);
+		$src_hauteur	= imagesy($ressource);
+	  }
+
+
+	/* -------------------------------------------------------------- New Sizes */
+	
 
 	if( preg_match( "#^([0-9]+)%$#" , $size ) )					/* Pourcentage 			000% */
 	  {
@@ -201,8 +256,35 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 	$hauteur = round( $hauteur );
 
 
+
+	/* -------------------------------------------------------------- Upscale image */
+
+  	if( ( $options["upscale"] == false ) AND ( ( $largeur > $src_largeur ) OR ( $hauteur > $src_hauteur ) ) )
+  	  {
+		$ratio = $largeur / $hauteur;
+
+		if( $largeur == $hauteur )		/* CARRÉ */
+		  {
+			$largeur 	= ( $src_largeur > $src_hauteur ) ? $src_hauteur : $src_largeur;
+			$hauteur 	= $largeur;
+		  }
+		else if( $largeur < $hauteur )		/* PORTRAIT */
+		  {
+			$hauteur 	= $src_hauteur;
+			$largeur 	= round( $hauteur * $ratio );
+		  }
+		else if( $largeur > $hauteur )		/* PAYSAGE */
+		  {
+			$largeur 	= $src_largeur;
+			$hauteur 	= round( $largeur / $ratio );
+		  }
+  	  }
+
+
+
 	/* -------------------------------------------------------------- Square image */
-	if( $square === true )
+
+	if( $options["square"] === true )
 	  {
 		if( $largeur < $hauteur )
 		  {
@@ -213,6 +295,10 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 			$largeur = $hauteur;
 		  }
 	  }
+
+
+
+
 
 	/* -------------------------------------------------------------- Limit memory size */
 	/*
@@ -238,6 +324,8 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 
 	$image = imagecreatetruecolor( $largeur , $hauteur );
 
+
+
 	/* -------------------------------------------------------------- Transparence PNG */
 
 	if( $ext == "png" )
@@ -246,6 +334,33 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 		imagesavealpha( $image , true );
 	 	$transparent = imagecolorallocatealpha( $image , 255, 255, 255, 127 );
 		imagefilledrectangle( $image, 0, 0 , $largeur, $hauteur, $transparent );
+	  }
+	else if( $ext == "gif" )
+	  {
+		/* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = ERROR = = = = */
+		/*
+		$transparent = imagecolortransparent( $image );
+		imagealphablending( $image , false );
+		imagesavealpha( $image , true );
+		imagepalettecopy( $image , $ressource );
+		imagefill( $image , 0 , 0 , imagecolortransparent( $ressource ) );
+		imagecolortransparent( $image , imagecolortransparent( $ressource) );
+		*/
+
+		/*
+		imagecolortransparent( $image , imagecolorallocatealpha( $image , 0 , 0 , 0 , 127 ) );
+		imagealphablending( $image , false );
+		imagesavealpha( $image , true );
+		*/
+
+		imagealphablending($image, false);
+		imagesavealpha($image,true);
+		$transparent = imagecolorallocatealpha($image, 255, 255, 255, 127);
+		imagefilledrectangle($image, 0, 0, $largeur, $hauteur, $transparent);
+
+
+
+		/* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = */
 	  }
 	/*
 	else
@@ -262,14 +377,15 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 		A tester : imagescale()
 	*/
 
-	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND ( $noise_correction === true ) )
+	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND ( $options["noise_correction"] === true ) )
 	  {
 		imagefilter( $ressource , IMG_FILTER_NEGATE );
 	  }
 
+
 	/* -------------------------------------------------------------- Resize */
 
-	if( $crop === true )
+	if( $options["crop"] === true )
 	  {
 		$cx			= 0;
 		$cy			= 0;
@@ -300,7 +416,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 
 	/* -------------------------------------------------------------- Noise correction ( 2/2 ) */
 
-	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND ( $noise_correction === true ) )
+	if( preg_match("#^(jpg|jpeg|pjpeg)$#" , $ext ) AND ( $options["noise_correction"] === true ) )
 	  {
 		imagefilter( $image , IMG_FILTER_NEGATE );
 	  }
@@ -326,33 +442,56 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 		  {
 			$color			= explode( "," , $copyright["color"] );
 			$color	 		= imagecolorallocatealpha( $image, $color[0] , $color[1] , $color[2] , $copyright["alpha"] );
-			$sizes			= imagettfbbox( $copyright["size"] , 0 , $copyright["font"] , $copyright["text"] );
+			$sizes		= imagettfbbox( $copyright["size"] , 0 , $copyright["font"] , $copyright["text"] );
 			$txt_largeur		= abs( $sizes[2] - $sizes[0] );
-			$txt_hauteur		= abs( $sizes[1] - $sizes[7] );
-			$X				= $largeur - $txt_largeur - 10;
-			$Y				= $hauteur - $txt_hauteur - 10;
+			$txt_hauteur	= abs( $sizes[1] - $sizes[7] );
+			$X			= $largeur - $txt_largeur - 10;
+			$Y			= $hauteur - $txt_hauteur - 10;
 
 			imagettftext( $image , $copyright["size"] , 0 , $X , ( $Y + $txt_hauteur ) , $color , $copyright["font"] , $copyright["text"] );
 		  }
 	  }
 
 
+	/* -------------------------------------------------------------- Amélioration de la netteté */
+	
+	if( isset($options["sharpen"]) AND ( $options["sharpen"] !== false) )
+	  {
+		$sharp = ( is_numeric($options["sharpen"]) AND ( $options["sharpen"] > 0 ) AND ( $options["sharpen"] < 100 ) ) ? $options["sharpen"] : 32;
+
+		$matrix = array(
+			array(-1, -1, -1),
+			array(-1, $sharp, -1),
+			array(-1, -1, -1),
+		);
+		
+		$divisor	= array_sum( array_map( "array_sum" , $matrix ) );
+		$offset	= 0; 
+
+		imageconvolution( $image , $matrix , $divisor , $offset );
+
+	  }
+
+
 
 	/* -------------------------------------------------------------- Output */
 
-	if( ( $destination == "screen" ) AND isset($ext) )
+	if( preg_match( "#^(jpg|jpeg|pjpeg|png|gif|webp)$#i" , $destination ) OR ( ( $destination == "screen" ) AND isset($ext) ) )
 	  {
-		switch( $ext )
+
+		$new_ext = preg_match( "#^(jpg|jpeg|pjpeg|png|gif|webp)$#i" , $destination ) ? strtolower( $destination ) : $ext; 
+
+		switch( $new_ext )
 		  {
 			case "jpg" :
 			case "jpeg" :
-						if( $imageinterlace === true )
+						if( $options["imageinterlace"] === true )
 	  					  {
 							imageinterlace( $image , true );
 	  					  }
 
 						header( "Content-type: image/jpeg" );
-						imagejpeg( $image , NULL , $quality );
+						imagejpeg( $image , NULL , $options["quality"] );
 						break;
 
 			case "png" :
@@ -376,29 +515,56 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 						break;
 		  }
 	  }
+
 	else if( $destination !== null )
 	  {
+		/* ----------------------------------------------------------------------------------- EXTENSION */
+		
 		$ext = strtolower(substr(strrchr($destination,"." ),1));
+
+
+		/* ----------------------------------------------------------------------------------- EXPORT */
+
 		if( isset($ext) )
 		  {
 			switch( $ext )
 			  {
 				case "jpg" :
 				case "jpeg" :	
-							if( $imageinterlace === true )
+							if( $options["imageinterlace"] === true )
 	  					   	  {
 								imageinterlace( $image , true );
 	  					  	  }
 
-							imagejpeg( $image , $destination , $quality );
+							imagejpeg( $image , $destination , $options["quality"] );
 							break;
 
-				case "png" :	imagepng( $image , $destination );				break;
-				case "webp" :	imagewebp( $image , $destination , $quality );		break;
-				case "gif" :	imagegif( $image , $destination );				break;
-				default :		imagepng( $image , $destination );				break;
+				case "png" :	imagepng( $image , $destination );					break;
+				case "webp" :	imagewebp( $image , $destination , $options["quality"] );	break;
+				case "gif" :	imagegif( $image , $destination );					break;
+				default :		imagepng( $image , $destination );					break;
 			  }
 		  }
+		  
+
+		/* ----------------------------------------------------------------------------------- VERSION RETINA */
+		
+		if( isset($options["retina"]) AND ( $options["retina"] != false ) AND !empty($options["retina"]) )
+		  {
+			$retina_size 				= image::resize_get_sizes( $src_largeur , $src_hauteur , ( $largeur * 2 )."x".( $hauteur * 2 ) , false );
+			$retina_options 				= $options;
+			$retina_options["size"]			= $retina_size["width"]."x".$retina_size["height"];
+			$retina_options["retina"]		= false;
+			$retina_options["quality"]		= floor( $retina_options["quality"] * 0.9 );
+			$retina_options["destination"]	= preg_replace( "#.".$ext."$#i" , $options["retina"].".".$ext , $destination );
+		
+			self::resize( $retina_options );
+	
+		  }
+
+		return true;
+
+		/* ----------------------------------------------------------------------------------- */
 	  }
 	else
 	  {
@@ -408,7 +574,7 @@ public static function resize( $ressource , $size , $destination=null , $crop=fa
 
 
 /* ----------------------------------------------------------------------------------------------------------------------------- RETOURNE LES DIMENSIONS POUR LE REDIMENSIONNE D'UNE IMAGE */
-public static function resize_get_sizes( $src_largeur , $src_hauteur , $size , $square=null )
+public static function resize_get_sizes( $src_largeur , $src_hauteur , $size , $square=null , $upscale=false )
   {
 	if( preg_match( "#^([0-9]+)%$#" , $size ) )					/* Pourcentage 			000% */
 	  {
@@ -467,6 +633,30 @@ public static function resize_get_sizes( $src_largeur , $src_hauteur , $size , $
 	$hauteur = round( $hauteur );
 
 
+	/* -------------------------------------------------------------- Upscale image */
+
+  	if( ( $upscale == false ) AND ( ( $largeur > $src_largeur ) OR ( $hauteur > $src_hauteur ) ) )
+  	  {
+		$ratio = $largeur / $hauteur;
+
+		if( $largeur == $hauteur )		/* CARRÉ */
+		  {
+			$largeur 	= ( $src_largeur > $src_hauteur ) ? $src_hauteur : $src_largeur;
+			$hauteur 	= $largeur;
+		  }
+		else if( $largeur < $hauteur )		/* PORTRAIT */
+		  {
+			$hauteur 	= $src_hauteur;
+			$largeur 	= round( $hauteur * $ratio );
+		  }
+		else if( $largeur > $hauteur )		/* PAYSAGE */
+		  {
+			$largeur 	= $src_largeur;
+			$hauteur 	= round( $largeur / $ratio );
+		  }
+  	  }
+
+
 	/* -------------------------------------------------------------- Square image */
 	if( $square === true )
 	  {
@@ -480,7 +670,9 @@ public static function resize_get_sizes( $src_largeur , $src_hauteur , $size , $
 		  }
 	  }
 
+
 	/* -------------------------------------------------------------- No squared image */
+	/*
 	if( $square === false )
 	  {
 		if( $src_largeur > $src_hauteur )
@@ -492,7 +684,7 @@ public static function resize_get_sizes( $src_largeur , $src_hauteur , $size , $
 			$largeur	= $hauteur * $src_largeur / $src_hauteur;
 		  }
 	  }
-
+	*/
 
 	/* -------------------------------------------------------------- End / Return */
 	
@@ -559,7 +751,7 @@ public static function pixelize( $file , $destination=null , $nb_pixel_width=30 
 	  }
 	else
 	  {
-		$src = functions::get_image( $file );
+		$src = image::get_image( $file );
 	  }
 
 	$largeur		= imagesx( $src );
@@ -1143,9 +1335,25 @@ public static function flip(&$image, $x = 0, $y = 0, $width = null, $height = nu
 
 public static function is_animated_gif( $filename )
   {
-	/* http://www.codigomanso.com/en/2009/06/detect-an-animated-gif-in-php/ */
-	return (bool)preg_match('#(\x00\x21\xF9\x04.{4}\x00\x2C.*){2,}#s', file_get_contents($filename));
+  	/* SRC : https://www.php.net/manual/en/function.imagecreatefromgif.php#122056 */
+
+	if( !($fh = @fopen($filename, 'rb')) )
+	  {
+	  	return false;
+	  }
+	
+	$count = 0;
+	while(!feof($fh) && $count < 2)
+	  {
+		$chunk = fread($fh, 1024 * 100);
+		$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00[\x2C\x21]#s', $chunk, $matches);
+	  }
+
+	fclose($fh);
+	return $count > 1;
+
   }
+
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES INFOS EXIFS */
@@ -1153,7 +1361,7 @@ public static function exif( $file , $tags="essentials" )
   {
 	if( is_file( $file ) AND function_exists("exif_read_data") )
 	  {
-		$exif = exif_read_data( $file , 0 , true );
+		$exif = @exif_read_data( $file , 0 , true );
 
 		if( $exif !== false )
 		  {
@@ -1331,7 +1539,7 @@ public static function svg_sizes( $data )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- FIX L'ORIENTATION D'UNE IMAGE */
 public static function fix_orientation( $file )
   {
-	$exif = exif_read_data( $file );
+	$exif = @exif_read_data( $file );
 	
 	if( !empty($exif["Orientation"]) )
 	  {

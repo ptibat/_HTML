@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 17/03/2016
-* Last modif	: 08/02/2018 10:16
+* Last modif	: 02/10/2019 16:33
 * Description	: Gestion des formulaies
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -13,6 +13,7 @@ class formulaire {
 	FUNCTIONS :
 
 	champ_formulaire( $options = array() )
+	clean_tinymce( $fields = array() , $data = array() )
 	display( $fields = array() , $data = null )
 	get_data( $fields = array() , $data = array() )
 	get_fields_names( $fields = array() )
@@ -165,7 +166,7 @@ public static function champ_formulaire( $options = array() )
 
 			else if( $type == "textarea" )
 			  {
-				$field .= "<textarea ".$commons.">".( !is_null($value) ? ( preg_match( "#tinymce#" , $class ) ? nl2br( $value ) : $value ) : "" )."</textarea>";
+				$field .= "<textarea ".$commons.">".( !is_null($value) ? $value : "" )."</textarea>"; /* ( preg_match( "#tinymce#" , $class ) ? nl2br( $value ) : $value ) */
 			  }
 			
 			else if( $type == "checkbox" )
@@ -184,10 +185,35 @@ public static function champ_formulaire( $options = array() )
 			  
 			  	if( is_array($options["select"]) AND !empty($options["select"]) )
 			  	  {
-			  	  	foreach( $options["select"] as $val => $text )
-			  	  	  {
-			  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected" : "" ).">".$text."</option>";
-			  	  	  }
+					if( count($options["select"]) == count( $options["select"] , COUNT_RECURSIVE ) )
+					  {
+				  	  	foreach( $options["select"] as $val => $text )
+				  	  	  {
+				  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected" : "" ).">".$text."</option>";
+				  	  	  }
+					  }
+					else
+					  {
+				  	  	foreach( $options["select"] as $group => $data )
+				  	  	  {
+				  	  	  	if( is_array( $data ) )
+				  	  	  	  {
+				  	  	  	  	$field .= "<optgroup label=\"".$group."\">";
+
+								foreach( $data as $val => $text )
+						  	  	  {
+						  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected" : "" ).">".$text."</option>";
+						  	  	  }
+	
+								$field .= "</optgroup>";
+
+				  	  	  	  }
+							else
+							  {
+				  	  	  		$field .= "<option value='".$group."'".( ( !is_null($value) AND ( $value == $group ) ) ? " selected" : "" ).">".$data."</option>";
+							  }
+				  	  	  }
+					  }
 			  	  }
 			  		
 			  	$field .= "
@@ -351,7 +377,7 @@ public static function get_data( $fields = array() , $data = array() )
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LA VARIABLE sql_data AVEC LES DONNÉES DU POST */
-public static function prepare_sql_data( $fields = array() , $post = array() , $sql_data = array() )
+public static function prepare_sql_data( $fields = array() , $post = array() , $sql_data = array() , $clean = true )
   {
 	$fields_names = self::get_fields_names( $fields );
 
@@ -363,12 +389,31 @@ public static function prepare_sql_data( $fields = array() , $post = array() , $
 		  }
 		else if( $type != "separator" )
 		  {
-			$sql_data[ $field_name ] = isset($post[ $field_name ]) ? trim( $post[ $field_name ] ) : ( isset($sql_data[ $field_name ]) ? $sql_data[ $field_name ] : "" );
+		  	$data = trim( $post[ $field_name ] );
+
+		  	if( ( $type == "textarea" ) AND ( $clean == true ) )
+		  	  {
+		  		$data = self::clean_tinymce( $data );
+		  	  }
+
+			$sql_data[ $field_name ] = isset($post[ $field_name ]) ? $data : ( isset($sql_data[ $field_name ]) ? $sql_data[ $field_name ] : "" );
 		  }
 	  }
 
 	return $sql_data;
 
+  }
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CORRECTIF POUR FIREFOX vs TINYMCE */
+public static function clean_tinymce( $data )
+  {
+	$data = preg_replace( "#<div>(\s+|\xC2\xA0)<\/div>#u" , "<br />" , $data );
+	$data = preg_replace( "#<div><\/div>#u" , "" , $data );
+
+	return $data;
+	
   }
 
 

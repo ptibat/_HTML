@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 17/04/2014
-* Last modif	: 18/04/2019 12:00
+* Last modif	: 20/02/2020 17:14
 * Description	: Gestion du template
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -31,8 +31,8 @@ class template {
 /* --------------------------------------------------------------------------------------------------------------------------------------------- VARIABLES */
 
 	public $options			= array();
-	public $html				= array();
-	public $body				= "";
+	public $html			= array();
+	public $body			= "";
 	public $output			= "";
 
 
@@ -42,7 +42,7 @@ public function __construct( $options = array() )
 	global $_HTML;
 
 	$default = array( 
-		"css_inline"		=> false,
+		"css_inline"	=> false,
 		"debug_source"	=> false,
 		"amp"			=> false,
 		"amp_url"		=> ""
@@ -66,7 +66,7 @@ public function __construct( $options = array() )
 
 	if( isset($_GET["output_amp"]) AND !empty($_GET["output_amp"]) )
 	  {
-		$this->options["amp"] = true;
+		$this->options["amp"] = $_HTML["amp"] = true;
 	  }
 
 	/* ------------------------------------------------ */
@@ -120,9 +120,24 @@ $this->output .= "
 	/* --------------------------------------------------------------------------------------- FAVICON */
 
 	if( isset($this->html["favicon"]) AND is_array($this->html["favicon"]) AND !empty($this->html["favicon"][0]) AND !empty($this->html["favicon"][1]) )
+  	  {
+		$this->output .= "\n\t<link rel=\"shortcut icon\" type=\"".$this->html["favicon"][0]."\" href=\"".$this->html["favicon"][1]."\" />";
+  	  }
+
+
+	/* --------------------------------------------------------------------------------------- FAVICONS */
+
+	if( isset($this->html["favicons"]) AND is_array($this->html["favicons"]) AND is_array($this->html["favicons"][0]) AND !empty($this->html["favicons"][0]) )
 	  {
-		$this->output .= "\n\t<link rel=\"icon\" type=\"".$this->html["favicon"][0]."\" href=\"".$this->html["favicon"][1]."\" />";
+  	  	foreach( $this->html["favicons"] as $favicon )
+  	  	  {
+  	  	  	if( !empty($favicon[0]) AND !empty($favicon[1]) )
+  	  	  	  {
+				$this->output .= "\n\t<link rel=\"icon\"".( !empty($favicon[2]) ? " sizes='".$favicon[2]."'" : "" )." type=\"".$favicon[0]."\" href=\"".$favicon[1]."\" />";
+  	  	  	  }
+  	  	  }
 	  }
+
 
 	
 	
@@ -256,7 +271,7 @@ $this->output .= "
 
 				if( is_file( $url ) )
 				  {
-					$css_inline .= $this->css_inline( $css_file );
+					$css_inline .= $this->css_inline( $url );
 				  }
 				else
 				  {
@@ -271,11 +286,12 @@ $this->output .= "
 
 		if( !empty($css_inline) )
 		  {
-		  	if( method_exists( "functions" , "code_compressor" ) )
+		  	if( method_exists( "functions" , "minify" ) )
 			  	  {
-					$css_inline = functions::code_compressor( $css_inline , true  , true , false , true );
+					$css_inline = functions::minify(array( "content" => $css_inline , "compression" => false ));
 			  	  }
-	
+
+
 			$css_inline = str_replace(	array( "{%ROOT%}" , "{%DOC_ROOT%}" , "{%APP_ROOT%}" , "{%ABSOLUTE_URL_SERVER%}" ),
 								array(    ROOT    ,    DOC_ROOT    ,    APP_ROOT    ,    ABSOLUTE_URL_SERVER    ),
 								$css_inline );
@@ -399,7 +415,7 @@ public function html_footer()
 	
 	/* --------------------------------------------------------------------------------------- INLINE JAVASCRIPT */
  
-	if( !$this->options["amp"] AND ( ( $this->html["js"] != "" ) OR ( $this->html["js_ready"] != "" ) ) )
+	if( !$this->options["amp"] AND ( ( $this->html["js"] != "" ) OR ( $this->html["js_ready"] != "" ) OR !empty($this->html["jsready"]) ) )
 	  {
 		$this->output .= "\n<script>";
 		
@@ -407,10 +423,22 @@ public function html_footer()
 			  {
 				$this->output .= "\n".$this->html["js"];
 			  }
-			  
+
+			$jsready = "";
+
 			if( !empty($this->html["js_ready"]) )
 			  {
-				$this->output .= "\n$(document).ready(function(){\n".$this->html["js_ready"]."\n});";
+				$jsready .= $this->html["js_ready"];
+			  }
+			  
+			if( !empty($this->html["jsready"]) )
+			  {
+				$jsready .= "\n\t".implode( "\n\t" , $this->html["jsready"] );
+			  }
+			  
+			if( !empty($jsready) )
+			  {
+				$this->output .= "\n$(document).ready(function(){\n".$jsready."\n});";
 			  }
 
 		$this->output .= "\n</script>";
@@ -551,6 +579,11 @@ public function css_inline( $css_file )
 		$css_file = preg_replace( "#^".ROOT."#" , DOC_ROOT , $css_file );
 	  }
 
+	if( !is_file( $css_file ) )
+	  {
+	  	return false;
+	  }
+
   	$css_file 		= strtok( $css_file , "?" );
 	$css_data		= file_get_contents( $css_file );
   	$path			= dirname( $css_file ).DIRECTORY_SEPARATOR;
@@ -609,6 +642,9 @@ public function amp()
   {
 	$imgs = functions::get_imgs( $this->body );
 
+
+  	/* -------------------------------------------- Images */
+
 	if( !empty($imgs[0]) )
 	  {
 	  	$n = -1;
@@ -657,6 +693,11 @@ public function amp()
 			  }
 		  }
 	  }
+
+
+  	/* -------------------------------------------- Inline styles */
+
+	$this->body = preg_replace( '/(<[^>]*) style=("[^"]+"|\'[^\']+\')([^>]*>)/i' , '$1$3', $this->body );
 
 
 	
@@ -763,22 +804,20 @@ public function display( $body = null , $force = false )
 	  		  	if( method_exists( "functions" , "show_source_code" ) )
 	  		  	  {
 					echo functions::show_source_code( $this->output );
-					exit;
 	  		  	  }
 				else
 	  		  	  {
 					echo "<xmp>".$this->output."</xmp>";
-					exit;
 	  		  	  }
 	  		  }
 			else
 	  		  {
 				echo $this->output;
-				exit;
 	  		  }
 
 		  }
 	  }
+
   }
 
 

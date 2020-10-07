@@ -719,14 +719,14 @@ public function code_google_tag_manager()
   {
   	if( isset($this->html["vars"]["google_tag_manager"]) AND !empty($this->html["vars"]["google_tag_manager"]) )
   	  {
-  	  	if( !preg_match( "/googletagmanager/i" , $this->html["header_extras"] ) )
+  	  	if( !preg_match( "/googletagmanager.com\/gtm/i" , $this->html["header_extras"] ) )
   	  	  {
-			$this->html["header_extras"] .= "
-			<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-			})(window,document,'script','dataLayer','".$this->html["vars"]["google_tag_manager"]."');</script>";
+		$this->html["header_extras"] .= "
+		<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+		new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+		j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+		'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+		})(window,document,'script','dataLayer','".$this->html["vars"]["google_tag_manager"]."');</script>";
 	
 			$this->html["body_extras"] .= "<noscript><iframe src='https://www.googletagmanager.com/ns.html?id=".$this->html["vars"]["google_tag_manager"]."' height='0' width='0' style='display:none;visibility:hidden'></iframe></noscript>";
   	  	  }
@@ -768,6 +768,43 @@ public function clean_tinymce_firefox( $data )
   {
 	return preg_replace( "#<div>(\s+|\xC2\xA0)<\/div>#u" , "" , $data );
   }
+
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- ENREGISTRE UN LOG EN BASE DE DONNÉES */
+public function log( $text , $type="log" )
+  {
+	global $app;
+
+	$types	= array( "log" , "ajout" , "suppression" , "modif" , "login" );
+	$type		= in_array( $type , $types ) ? $type : "log";
+	$user_id	= $app->user->connected ? $app->user->infos["id"] : 0;
+
+	$query = "INSERT INTO
+	
+				 logs
+
+			 SET
+				time			= '".time()."',
+				microtime		= '".functions::microtime()."',
+				type			= '".$type."',
+				text 			= ".$this->html["db"]->protect( trim( $text ) ).",
+				user_id		= '".$user_id."'";
+
+	if( $this->html["db"]->insert( $query ) )
+	  {
+		return true;
+	  }
+	else
+	  {
+		return false;
+	  }
+  }
+
+
+
 
 
 

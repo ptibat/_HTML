@@ -3,18 +3,18 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
-* Version		: 24.1
-* Last modif	: 16/05/2019 11:54
+* Version		: 25.0
+* Last modif	: 03/12/2019 15:30
 * Description	: Fichier d'initialisation du moteur
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------ VERSION */
 
-if( version_compare( PHP_VERSION , "5.6" , "<" ) )
+if( version_compare( PHP_VERSION , "7" , "<" ) )
   {
 	header( "Content-Type: text/plain" );
-	die( "PHP 5.6 is required" );
+	die( "PHP 7 is required" );
   }
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------ SESSION */
@@ -24,7 +24,8 @@ if( session_id() == "" )
 	session_start();
   }
 
-/* ------------------------------------------------------------------------------------------------------------------------------------------ VARIABLES ROOT */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------ VARIABLES ROOT / RÉPERTOIRES / PATHS */
 
 $root	= realpath( $_SERVER["DOCUMENT_ROOT"].DIRECTORY_SEPARATOR );
 $root	= str_replace( "\\" , "/" , $root );
@@ -63,12 +64,24 @@ if( !defined( "APP_DOC_ROOT" ) )
 
 if( !defined( "APP_ROOT" ) ) 			{	define( "APP_ROOT", ROOT.str_replace( ( ( substr( DOC_ROOT , -1 ) == DIRECTORY_SEPARATOR ) ? substr( DOC_ROOT , 0 , -1 ) : DOC_ROOT ) , "" , APP_DOC_ROOT ) ); }
 
+if( !defined( "CWD" ) )
+  {
+	$cwd = ROOT.preg_replace( "#^".DOC_ROOT."#", "" , dirname( $_SERVER["SCRIPT_FILENAME"]) );
+	$cwd = ( empty($cwd) ? "/" : $cwd ); 
+
+	define( "CWD", $cwd );
+	define( "DOC_CWD", WWW_ROOT.$cwd );
+
+  }
+
+
+
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------ THE VARIABLE */
 
 $_HTML = array(
 		"administrator"		=> "@ptibat",
-		"version" 			=> "24.0",
+		"version" 			=> "25.0",
 		"execution_time"		=> 0,
 		"execution_time_start"	=> microtime( true ),
 		"execution_time_end"	=> microtime( true ),
@@ -78,7 +91,9 @@ $_HTML = array(
 		"config"			=> array(
 							"maintenance"			=> false,
 							"responsive_images"		=> false,
-							"max_image_display_width" 	=> 1200
+							"max_image_display_width" 	=> 1200,
+							"img_size"				=> "##SIZE##",
+							"retina_suffix"			=> "2"
 						   ),
 		"db"				=> null,
 		"headers"			=> array(),
@@ -95,7 +110,9 @@ $_HTML = array(
 							"APP_ROOT" 			=> APP_ROOT,
 							"URL_SERVER" 		=> URL_SERVER,
 							"ABSOLUTE_URL_SERVER" 	=> ABSOLUTE_URL_SERVER,
-							"FILE" 			=> FILE
+							"FILE" 			=> FILE,
+							"CWD" 			=> CWD,
+							"DOC_CWD" 			=> DOC_CWD
 						   ),
 		"urls"				=> array(),
 		"page"			=> "",
@@ -198,8 +215,4 @@ if( class_exists( "functions" ) AND isset($_SERVER["SERVER_ADDR"]) AND !function
 	$_HTML["dev"] 	= false;
 	$_HTML["prod"] 	= true;
   }
-
-
-
-
 

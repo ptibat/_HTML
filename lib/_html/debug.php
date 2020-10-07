@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 11/12/2008
-* Last modif	: 14/02/2019 17:40
+* Last modif	: 04/03/2020 16:02
 * Description	: Classe gestion des erreurs PHP
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -11,10 +11,10 @@ class debug {
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- VARIABLES */
 
-	public $options				= array();
-	public $included_files			= false;
-	private $errors				= array();
-	private $nb_errors			= 0;
+	public $options			= array();
+	public $included_files		= false;
+	private $errors			= array();
+	public $nb_errors			= 0;
 	
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CONSTRUCTEUR */
@@ -25,7 +25,8 @@ public function __construct( $options = array() )
 		"force"			=> false,
 		"log_file"			=> DOC_ROOT."/lib/logs/debug.log",
 		"output"			=> "log",
-		"method"			=> "array"
+		"method"			=> "array",
+		"couleur"			=> "#CC0000"
 	);
 
 	$this->options = is_array($options) ? array_merge( $default , $options ) : $default;
@@ -37,35 +38,21 @@ public function __construct( $options = array() )
 	  {
 		ini_set( "display_errors" , 1 );
 		ini_set( "display_startup_errors" , 1 );
+		set_error_handler( array( &$this, "error" ) );
 	  }
 	else
 	  {
 		/* error_reporting( E_ERROR | E_WARNING | E_PARSE | E_NOTICE ); */
 		error_reporting( E_ALL );
-		set_error_handler( array ( &$this, "error" ) );
+		set_error_handler( array( &$this, "error" ) );
 	  }
   }
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- DESTRUCTEUR */
 public function __destruct()
-  {  	
-	if( ( $this->nb_errors > 0 ) AND ( $this->options["method"] == "array" ) )
-	  {
-		if( $this->options["output"] == "log" )
-		  {
-			$this->write_log();
-		  }
-		else if( $this->options["output"] == "screen" )
-		  {
-			echo "<div style='background-color:#DFDFDF;padding:10px;color:#000000;font-size:20pt;text-align:left;font-family:arial,sans-serif;'>DEBUG : ".$this->nb_errors." erreur(s)</div>";
-
-			foreach( $this->errors AS $error )
-			  {
-				echo $error."\n";
-			  }
-		  }
-	  }
+  {
+	$this->ending();
   }
   
 
@@ -104,22 +91,25 @@ public function error_name( $num )
 					"16384" => "E_USER_DEPRECATED" ,
 					"30719" => "E_ALL" );
 
-	return ( isset( $error_numbers[ $num ] ) ? $error_numbers[ $num ] : "" );
+	return ( isset( $error_numbers[ $num ] ) ? preg_replace( "#E_#" , "" , $error_numbers[ $num ] ) : "" );
   }
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- TRAITE L'ERREUR RECUE */
-public function error( $niveau_erreur , &$message , &$fichier , &$ligne , &$env )
+public function error( $niveau_erreur , $message , $fichier , $ligne , $env )
   {
 	$this->nb_errors++;
 
 	if( $this->options["output"] == "screen" )
 	  {
-		$error = "<pre style='background-color:#DFDFDF;border-left:10px solid #D70D70;padding:8px;color:#000000;font-size:9pt;'>\nERREUR : ".$message."\nFICHIER : ".$fichier." : <b>".$ligne."</b></pre>";
+	  	$filename 	= basename($fichier);
+	  	$fichier 	= preg_replace( "#".$filename."$#" , "<b style='color:".$this->options["couleur"].";'>".$filename."</b>" , $fichier );
+
+		$error = "<div style='background-color:#F0EFEF;border-left:8px solid ".$this->options["couleur"].";padding:8px;color:#000000;font-size:9pt;line-height:11pt;margin-bottom:10px;white-space:pre-wrap;'>ERREUR   : ".$message."\nFICHIER  : ".$fichier." : <b>".$ligne."</b></div>";
 
 		if( $this->options["method"] == "array" )
 		  {
-			$this->errors[] = $error;
+			$this->errors[$niveau_erreur][] = $error;
 		  }
 		else
 		  {
@@ -161,7 +151,7 @@ public function error( $niveau_erreur , &$message , &$fichier , &$ligne , &$env 
 
 		if( $this->options["method"] == "array" )
 		  {
-			$this->errors[] = $error;
+			$this->errors[$niveau_erreur][] = $error;
 		  }
 		else
 		  {
@@ -182,14 +172,52 @@ public function write_log( $error=NULL )
 	  }
 	else if( $this->options["method"]=="array" )
 	  {
-		foreach( $this->errors AS $error )
+		foreach( $this->errors AS $level => $errors )
 		  {
-			fwrite( $file , $error."\n" );
+			fwrite( $file , "---------------------------------------------------------------------------------- ".$this->error_name( $level )."\n" );
+
+			foreach( $errors AS $error )
+			  {
+				fwrite( $file , $error."\n" );
+			  }
 		  }
 	  }
 
 	fclose( $file );
   }
+
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- ENDING */
+public function ending()
+  {
+	if( ( $this->nb_errors > 0 ) AND ( $this->options["method"] == "array" ) )
+	  {
+		if( $this->options["output"] == "log" )
+		  {
+			$this->write_log();
+		  }
+		else if( $this->options["output"] == "screen" )
+		  {
+			echo "<div style='background-color:#0074E8;padding:10px;color:#FFF;font-size:20pt;text-align:left;font-family:arial,sans-serif;margin-bottom:30px;'>DEBUG : ".$this->nb_errors." erreur".( $this->nb_errors > 1 ? "s" : "" )."</div>";
+
+			foreach( $this->errors AS $level => $errors )
+			  {
+ 				echo "<div style='background-color:#FFA531;padding:10px;color:#7E4204;font-size:14pt;text-align:left;font-family:arial,sans-serif;margin-bottom:10px;'>".$this->error_name( $level )."</div>";
+
+				foreach( $errors AS $error )
+				  {
+					echo $error;
+				  }
+
+			  }
+		  }
+	  }
+  }
+
+
 
 }
 
