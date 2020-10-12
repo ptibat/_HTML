@@ -2,7 +2,7 @@
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
-* Last modif	: 18/04/2019 18:00
+* Last modif	: 12/10/2020 11:11
 * Description	: APP Minimalist
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -58,7 +58,7 @@ public function display()
 	/* ---------------------- Fichiers Javascript */
 
 	$js_files = array(
-		"jquery"	=> ROOT."/lib/js/jquery-3.4.0.min.js"
+		"jquery"	=> ROOT."/lib/js/jquery.min.js"
 	);
 	
 	$this->html["js_files"] = array_merge( $js_files , $this->html["js_files"] );

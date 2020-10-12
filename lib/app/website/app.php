@@ -2,7 +2,7 @@
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
-* Last modif	: 18/04/2019 12:00
+* Last modif	: 12/10/2020 11:11
 * Description	: APP Website
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -148,7 +148,7 @@ public function display()
 		/* -------------------- Fichiers Javascript */
 
 		$js_files = array(
-			"jquery"		=> ROOT."/lib/js/jquery-3.4.0.min.js", 
+			"jquery"		=> ROOT."/lib/js/jquery.min.js", 
 			"jquery_ui"		=> ROOT."/lib/js/jquery-ui/jquery-ui.min.js",
 			"functions"		=> ROOT."/lib/js/_functions.min.js",
 			"app"			=> APP_ROOT."/website.js?v=".filemtime( APP_DOC_ROOT."/website.js" )
