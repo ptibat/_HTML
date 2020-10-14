@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 18/02/2013
-* Last modif	: 03/03/2020 15:50
+* Last modif	: 14/10/2020 17:14
 * Description	: Classe de gestion de base de données SQL // PDO
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -31,6 +31,7 @@ class database {
 	query_exec( $query )
 	row( $query , $num=false )
 	sql_data( $sql_data )
+	table_exists( $tablename )
 	update( $query )
 	version( $min=null )
 */
@@ -815,7 +816,21 @@ public function get_error()
 	return $return;
   }
 
-  
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- VERIFIE SI UNE TABLE EXISTE */
+public function table_exists( $tablename )
+  {
+	$check = $this->pdo->query( "SHOW TABLES LIKE '".$tablename."'" );
+
+	return ( $check AND ( $check->rowCount() > 0) ) ? true : false;
+  }
+
+
+
+
+
+
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- DESTRUCTEUR */
 public function __destruct()

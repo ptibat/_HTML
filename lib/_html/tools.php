@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 21/01/2013
-* Last modif	: 11/04/2019 14:00
+* Last modif	: 14/10/2020 17:14
 * Description	: Extension de la class APP avec un ensemble de fonctions communes à plusieurs templates
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -778,29 +778,35 @@ public function log( $text , $type="log" )
   {
 	global $app;
 
-	$types	= array( "log" , "ajout" , "suppression" , "modif" , "login" );
-	$type		= in_array( $type , $types ) ? $type : "log";
-	$user_id	= $app->user->connected ? $app->user->infos["id"] : 0;
-
-	$query = "INSERT INTO
-	
-				 logs
-
-			 SET
-				time			= '".time()."',
-				microtime		= '".functions::microtime()."',
-				type			= '".$type."',
-				text 			= ".$this->html["db"]->protect( trim( $text ) ).",
-				user_id		= '".$user_id."'";
-
-	if( $this->html["db"]->insert( $query ) )
+	if( $this->html["db"]->table_exists( "logs" ) )
 	  {
-		return true;
+		$types	= array( "log" , "ajout" , "suppression" , "modif" , "login" );
+		$type		= in_array( $type , $types ) ? $type : "log";
+		$user_id	= $app->user->connected ? $app->user->infos["id"] : 0;
+
+		$query = "INSERT INTO
+		
+					 logs
+
+				 SET
+					time			= '".time()."',
+					microtime		= '".functions::microtime()."',
+					type			= '".$type."',
+					text 			= ".$this->html["db"]->protect( trim( $text ) ).",
+					user_id		= '".$user_id."'";
+
+		if( $this->html["db"]->insert( $query ) )
+		  {
+			return true;
+		  }
+		else
+		  {
+			return false;
+		  }
+
 	  }
-	else
-	  {
-		return false;
-	  }
+
+
   }
 
 
