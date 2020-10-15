@@ -2,7 +2,7 @@
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
-* Last modif	: 15/10/2020 17:00
+* Last modif	: 15/10/2020 17:20
 * Description	: APP Website
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -12,6 +12,7 @@
 
 $modules = array(
 			"debug",
+			"lang",
 			"template",
 			"tools",
 			"formulaire",
@@ -67,9 +68,18 @@ public function __construct()
 						"database"	=> DB_DATABASE
 					  ));
 	*/
-	$this->tools			= new tools();
+	$this->tools		= new tools();
 	$this->commons		= new commons();
 	$this->template		= new template();
+
+
+	/* ------------------------------------------------ LANGUES */
+	/*
+	lang::init(array(
+		"type"		=> "db",
+		"sql_table"		=> "traductions"
+	));
+	*/
 
 
 
