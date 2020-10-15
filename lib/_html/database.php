@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 18/02/2013
-* Last modif	: 14/10/2020 17:14
+* Last modif	: 15/10/2020 13:12
 * Description	: Classe de gestion de base de données SQL // PDO
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -182,7 +182,7 @@ private function error( $e )
 
 	$message = "";
 
-	if( isset($_HTML["dev"]) AND ( $_HTML["dev"] == true ) )
+	if( isset($_HTML["prod"]) AND ( $_HTML["prod"] == false ) )
 	  {
 		$message .= "<b>Erreur serveur</b><br />".$e->getMessage()."<br /><br />";
 	  }

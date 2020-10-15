@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 17/04/2014
-* Last modif	: 20/02/2020 17:14
+* Last modif	: 15/10/2020 12:18
 * Description	: Gestion du template
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -799,7 +799,20 @@ public function display( $body = null , $force = false )
 			
 	  		$this->php_headers();
 
-	  		if( $this->options["debug_source"] === true )
+
+	  		/* ---------------------------- CHECK DEBUG */
+
+	  		global $app;
+
+			if( ( $this->html["debug"] == true ) AND isset($app) AND isset($app->debug) AND ( $app->debug->nb_errors > 0 ) )
+			  {
+	  		  	$app->debug->ending(true);
+	  		  }
+
+
+	  		/* ---------------------------- AFFICHAGE */
+
+	  		else if( $this->options["debug_source"] === true )
 	  		  {
 	  		  	if( method_exists( "functions" , "show_source_code" ) )
 	  		  	  {

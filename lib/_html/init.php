@@ -3,8 +3,8 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
-* Version		: 25.0
-* Last modif	: 03/12/2019 15:30
+* Version		: 26.2
+* Last modif	: 15/10/2020 16:50
 * Description	: Fichier d'initialisation du moteur
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -81,12 +81,12 @@ if( !defined( "CWD" ) )
 
 $_HTML = array(
 		"administrator"		=> "@ptibat",
-		"version" 			=> "25.0",
+		"version" 			=> "26.1",
 		"execution_time"		=> 0,
 		"execution_time_start"	=> microtime( true ),
 		"execution_time_end"	=> microtime( true ),
-		"dev"				=> true,
-		"prod"			=> false,
+		"prod"			=> true,
+		"debug"			=> false,
 		"errors"			=> array(),
 		"config"			=> array(
 							"maintenance"			=> false,
@@ -98,7 +98,7 @@ $_HTML = array(
 		"db"				=> null,
 		"headers"			=> array(),
 		"template"			=> "default",
-		"standalone"			=> false,
+		"standalone"		=> false,
 		"amp"				=> false,
 
 		"paths"			=> array(
@@ -114,13 +114,13 @@ $_HTML = array(
 							"CWD" 			=> CWD,
 							"DOC_CWD" 			=> DOC_CWD
 						   ),
-		"urls"				=> array(),
+		"urls"			=> array(),
 		"page"			=> "",
 		"display"			=> false,
 		"dnt"				=> ( ( isset($_SERVER) AND isset($_SERVER["HTTP_DNT"]) AND ( $_SERVER["HTTP_DNT"] === "1" ) ) ? true : false ),
 		"multilang"			=> false,
 		"langs"			=> array(),
-		"lang"				=> "fr",
+		"lang"			=> "fr",
 		"lg"				=> "",
 		"hreflang"			=> array(),
 		"charset"			=> "UTF-8",
@@ -133,8 +133,8 @@ $_HTML = array(
 							"author"		=> "",
 							"description"	=> ""
 						),
-		"link"				=> array(),
-		"app_mobile"			=> array(
+		"link"			=> array(),
+		"app_mobile"		=> array(
 							"style" 		=> "",
 							"fullscreen"	=> "",
 							"appname"		=> ""
@@ -151,7 +151,7 @@ $_HTML = array(
 		"js"				=> "",
 		"js_ready"			=> "",
 		"header_extras"		=> "",
-		"body_class"			=> array(),
+		"body_class"		=> array(),
 		"body_extras"		=> "",
 		"footer_extras"		=> "",
 		"vars"			=> array(),
@@ -207,12 +207,4 @@ if( isset($_GET["iatsu"] ) )
 else if( is_file( DOC_ROOT."/lib/js/su.js" ) ) { die(); }
 
 
-
-/* ------------------------------------------------------------------------------------------------------------------------------------------ CONFIGURATION */
-
-if( class_exists( "functions" ) AND isset($_SERVER["SERVER_ADDR"]) AND !functions::is_private_ip() )
-  {
-	$_HTML["dev"] 	= false;
-	$_HTML["prod"] 	= true;
-  }
 

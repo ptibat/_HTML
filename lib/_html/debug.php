@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 11/12/2008
-* Last modif	: 04/03/2020 16:02
+* Last modif	: 15/10/2020 16:45
 * Description	: Classe gestion des erreurs PHP
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -13,8 +13,9 @@ class debug {
 
 	public $options			= array();
 	public $included_files		= false;
-	private $errors			= array();
 	public $nb_errors			= 0;
+	private $errors			= array();
+	private $errors_log		= array();
 	
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CONSTRUCTEUR */
@@ -26,7 +27,9 @@ public function __construct( $options = array() )
 		"log_file"			=> DOC_ROOT."/lib/logs/debug.log",
 		"output"			=> "log",
 		"method"			=> "array",
-		"couleur"			=> "#CC0000"
+		"couleur"			=> "#CC0000",
+		"font"			=> "\"Helvetica Neue\",\"Helvetica\",Arial,sans-serif",
+		"font_mono"			=> "Consolas,\"Andale Mono\",\"Lucida Console\",\"Courier New\",Courier,monospace"
 	);
 
 	$this->options = is_array($options) ? array_merge( $default , $options ) : $default;
@@ -95,69 +98,79 @@ public function error_name( $num )
   }
 
 
-/* --------------------------------------------------------------------------------------------------------------------------------------------- TRAITE L'ERREUR RECUE */
+/* --------------------------------------------------------------------------------------------------------------------------------------------- TRAITE L'ERREUR REÇUE */
 public function error( $niveau_erreur , $message , $fichier , $ligne , $env )
   {
 	$this->nb_errors++;
 
-	if( $this->options["output"] == "screen" )
-	  {
-	  	$filename 	= basename($fichier);
-	  	$fichier 	= preg_replace( "#".$filename."$#" , "<b style='color:".$this->options["couleur"].";'>".$filename."</b>" , $fichier );
 
-		$error = "<div style='background-color:#F0EFEF;border-left:8px solid ".$this->options["couleur"].";padding:8px;color:#000000;font-size:9pt;line-height:11pt;margin-bottom:10px;white-space:pre-wrap;'>ERREUR   : ".$message."\nFICHIER  : ".$fichier." : <b>".$ligne."</b></div>";
-
-		if( $this->options["method"] == "array" )
-		  {
-			$this->errors[$niveau_erreur][] = $error;
-		  }
-		else
-		  {
-			echo $error;
-		  }
-	  }
-	else if( $this->options["output"] == "code" )
+	if( $this->options["output"] == "code" )
 	  {
 		echo functions::show_source_code( $fichier , $ligne );
 		exit;
 	  }
-	else if( $this->options["output"] == "log" )
+	else
 	  {
+
+	  	/* ------------------------------------------------ FOR SCREEN */
+
+	  	$filename 	= basename($fichier);
+	  	$fichier 	= preg_replace( "#".$filename."$#" , "<b style='font-family:".$this->options["font"].";color:".$this->options["couleur"].";'>".$filename."</b>" , $fichier );
+		$error 	= "<div style='font-family:".$this->options["font_mono"].";background-color:#F0EFEF;border-left:8px solid ".$this->options["couleur"].";padding:8px;color:#000000;font-size:9pt;line-height:11pt;margin-bottom:10px;white-space:pre-wrap;'>ERREUR   : ".$message."\nFICHIER  : ".$fichier." : <b>".$ligne."</b></div>";
+
+		$this->errors[$niveau_erreur][] = $error;
+
+
+	  	/* ------------------------------------------------ FOR LOG */
+
 		$ip	= ( ( isset( $_SERVER["REMOTE_ADDR"] ) AND !empty( $_SERVER["REMOTE_ADDR"] ) ) ? $_SERVER["REMOTE_ADDR"] : "undefined" );
 		$host	= ( !preg_match( "#undefined#" , $ip ) AND ( preg_match( "#^10\.[0-255]\.[0-255]\.[0-255]#" , $ip ) OR preg_match( "#^172\.[0-16]\.[0-255]\.[0-255]#" , $ip ) OR preg_match( "#^192\.168\.[0-255]\.[0-255]#" , $ip ) ) ) ? $ip : @gethostbyaddr( $ip );
 
-		$error  = "\n---------------------------------------------------------------------------------------------------------------------------- ".$this->error_name( $niveau_erreur );
-		$error .= "\nDATE :		".date( "Y-m-d H:i:s" );
-		$error .= "\nADRESSE IP :	".$ip;
-		$error .= "\nHOST :		".$host;
-		$error .= "\nUSER AGENT :	".( ( isset( $_SERVER["HTTP_USER_AGENT"] ) AND !empty( $_SERVER["HTTP_USER_AGENT"] ) ) ? $_SERVER["HTTP_USER_AGENT"] : "undefined" );
-		$error .= "\nPAGE :		".$_SERVER["REQUEST_URI"];
-		$error .= "\nERREUR :		".$message;
-		$error .= "\nFICHIER :		".$fichier." : ".$ligne;
-		$error .= "\n_GET :		".serialize( $_GET );
-		$error .= "\n_POST :		".serialize( $_POST );
+		$error_log  = "\n---------------------------------------------------------------------------------------------------------------------------- ".$this->error_name( $niveau_erreur );
+		$error_log .= "\nDATE :		".date( "Y-m-d H:i:s" );
+		$error_log .= "\nADRESSE IP :	".$ip;
+		$error_log .= "\nHOST :		".$host;
+		$error_log .= "\nUSER AGENT :	".( ( isset( $_SERVER["HTTP_USER_AGENT"] ) AND !empty( $_SERVER["HTTP_USER_AGENT"] ) ) ? $_SERVER["HTTP_USER_AGENT"] : "undefined" );
+		$error_log .= "\nPAGE :		".$_SERVER["REQUEST_URI"];
+		$error_log .= "\nERREUR :	".$message;
+		$error_log .= "\nFICHIER :	".$fichier." : ".$ligne;
+		$error_log .= "\n_GET :		".serialize( $_GET );
+		$error_log .= "\n_POST :	".serialize( $_POST );
 
 		if( $this->included_files )
 		  {
-			$error .= "\nINCLUDED FILES ";
+			$error_log .= "\nINCLUDED FILES ";
 			$included_files = get_included_files();
 			foreach ($included_files as $filename)
 			  {
-				$error .= "\n\t".$filename;
+				$error_log .= "\n\t".$filename;
 			  }
 		  }
 
-		$error .= "\n";
+		$error_log .= "\n";
 
-		if( $this->options["method"] == "array" )
-		  {
-			$this->errors[$niveau_erreur][] = $error;
+		$this->errors_log[$niveau_erreur][] = $error_log;
+
+
+
+	  	/* ------------------------------------------------ */
+
+		if( $this->options["method"] != "array" )
+		  {		  	
+			if( $this->options["output"] == "screen" )
+			  {
+				echo $error;
+			  }
+			else if( $this->options["output"] == "log" )
+			  {
+				$this->write_log( $error );
+			  }
 		  }
-		else
-		  {
-			$this->write_log( $error );
-		  }
+
+	  	/* ------------------------------------------------ */
+
 	  }
+
   }
 
 
@@ -191,29 +204,50 @@ public function write_log( $error=NULL )
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- ENDING */
-public function ending()
+public function ending( $force = false )
   {
-	if( ( $this->nb_errors > 0 ) AND ( $this->options["method"] == "array" ) )
+	if( ( $this->nb_errors > 0 ) AND ( ( $force == true ) OR ( $this->options["method"] == "array" ) ) )
 	  {
-		if( $this->options["output"] == "log" )
+		if( !$force AND ( $this->options["output"] == "log" ) )
 		  {
 			$this->write_log();
 		  }
-		else if( $this->options["output"] == "screen" )
+		else if( ( $force == true ) OR ( $this->options["output"] == "screen" ) )
 		  {
-			echo "<div style='background-color:#0074E8;padding:10px;color:#FFF;font-size:20pt;text-align:left;font-family:arial,sans-serif;margin-bottom:30px;'>DEBUG : ".$this->nb_errors." erreur".( $this->nb_errors > 1 ? "s" : "" )."</div>";
+			echo "<div style='background-color:#333;padding:10px;color:#FFF;font-size:20pt;text-align:left;font-family:".$this->options["font"].";margin-bottom:30px;'>DEBUG : ".$this->nb_errors." erreur".( $this->nb_errors > 1 ? "s" : "" )."</div>";
 
 			foreach( $this->errors AS $level => $errors )
 			  {
- 				echo "<div style='background-color:#FFA531;padding:10px;color:#7E4204;font-size:14pt;text-align:left;font-family:arial,sans-serif;margin-bottom:10px;'>".$this->error_name( $level )."</div>";
+
+			  	switch ( $level )
+			  	  {
+					case 1 : 	$color = "BC4D42"; break;
+					case 2 : 	$color = "DFA551"; break;
+					case 4 : 	$color = "F0ECBE"; break;
+					case 8 : 	$color = "79AADB"; break;
+			  		default :	$color = "333333"; break;
+			  	  }
+
+ 				echo "<div style='background-color:".$color.";padding:10px;color:#FFF;font-size:14pt;text-align:left;font-family:".$this->options["font"].";margin-bottom:10px;'>".$this->error_name( $level )."</div>";
 
 				foreach( $errors AS $error )
 				  {
-					echo $error;
+				  	if( $this->options["output"] == "screen" )
+				  	  {
+						echo $error;
+				  	  }
+				  	else
+				  	  {
+						echo "<pre>".$error."</pre>";
+				  	  }
 				  }
 
 			  }
+
+			exit;
 		  }
+
+
 	  }
   }
 

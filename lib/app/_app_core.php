@@ -2,7 +2,7 @@
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
-* Last modif	: 18/04/2019 12:00
+* Last modif	: 15/10/2020 17:00
 * Description	: APP Website : Classe APP_CORE
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -72,6 +72,19 @@ public function check_msg()
 	  {
 		$this->html["js_ready"] .= "\nmsg({ text : \"".functions::xss_protect( $_SESSION["msg"] , false , false , "<br><b><a><i><u><hr>"  )."\" , delay : 10000 , exit : true });";
 		unset( $_SESSION["msg"] );
+	  }
+  }
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- DESACTIVE LE MODE PROD POUR LES IP LOCALES */
+public function init_debug()
+  {
+	if( class_exists( "functions" ) AND isset($_SERVER["SERVER_ADDR"]) AND functions::is_private_ip() )
+	  {
+		$this->html["prod"]	= false;
+		$this->html["debug"]	= true;
 	  }
   }
 
