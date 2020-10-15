@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
-* Last modif	: 04/04/2019 10:00
+* Last modif	: 15/10/2020 17:10
 * Description	: Fichier de config du site
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -13,17 +13,8 @@
 
 define( "DB_DATABASE", "_html" );
 define( "DB_HOST", "localhost" );
-
-if( $_HTML["prod"] )
-  {
-	define( "DB_USER", "user" );
-	define( "DB_PASSWORD", "password" );
-  }
-else
-  {
-	define( "DB_USER", "user" );
-	define( "DB_PASSWORD", "password" );
-  }
+define( "DB_USER", "user" );
+define( "DB_PASSWORD", "password" );
 
 
 /**
