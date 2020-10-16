@@ -4,7 +4,7 @@
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
 * Version		: 26.2
-* Last modif	: 15/10/2020 16:50
+* Last modif	: 16/10/2020 16:10
 * Description	: Fichier d'initialisation du moteur
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -92,7 +92,7 @@ $_HTML = array(
 							"maintenance"			=> false,
 							"responsive_images"		=> false,
 							"max_image_display_width" 	=> 1200,
-							"img_size"				=> "##SIZE##",
+							"img_size"				=> "f",
 							"retina_suffix"			=> "2"
 						   ),
 		"db"				=> null,
