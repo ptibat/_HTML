@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
-* Last modif	: 14/02/2019 17:00
+* Last modif	: 16/10/2020 14:45
 * Description	: Classe de gestion des langues
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -129,7 +129,7 @@ public static function init( $options = array() )
 	if( $_HTML !== null )
 	  {
 	  	$_HTML["lang"] 	= self::$language;
-  	  	$_HTML["lg"]		= "_".$_HTML["lang"];
+  	  	$_HTML["lg"]	= "_".$_HTML["lang"];
 	  }
 	
 	
@@ -207,7 +207,7 @@ public static function load_language( $language=null )
 
 	if( ( self::$options["type"] == "db" ) AND !empty(self::$options["sql_table"]) )		
 	  {
-	  	$query = $_HTML["db"]->query( "SELECT ref, type, ".$language." as lang FROM ".self::$options["sql_table"]."" );
+	  	$query = $_HTML["db"]->query( "SELECT dico, ref, type, ".$language." as lang FROM ".self::$options["sql_table"]."" );
 	
 		if( $query["ok"] )
 		  {
@@ -215,7 +215,7 @@ public static function load_language( $language=null )
 			  {
 				foreach( $query["data"] as $row )
 				  {
-				  	self::$data[ $row["ref"] ] = ( $row["ref"] == "data_raw" ) ? nl2br( $row["lang"] ) : $row["lang"];
+				  	self::$data[ $row["dico"] ][ $row["ref"] ] = ( $row["ref"] == "data_raw" ) ? nl2br( $row["lang"] ) : $row["lang"];
 				  }
 			  }
 		  }
