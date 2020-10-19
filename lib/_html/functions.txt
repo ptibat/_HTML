@@ -1,5 +1,5 @@
 
-21/11/2019
+19/10/2020
 
 age( $date_de_naissance )
 alt( $text , $max = 150 , $guillemet = true )
@@ -154,7 +154,7 @@ number_to_ip( $number )
 numero_de_commande( $time=null )
 numero_semaine( $date ) /* 0000-00-00 */
 og_description( $texte )
-only_alphanumeric( $txt , $replace = "" , $spaces = true )
+only_alphanumeric( $txt , $replace = "", $spaces = true , $tirets = true )
 only_numeric( $txt , $replace="" )
 os( $ua=null )
 parse_css( $file )

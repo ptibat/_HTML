@@ -4,7 +4,7 @@
 * Contact		: @ptibat
 * Dev start		: 07/05/2007
 * Version		: 23.0.1
-* Last modif	: 20/01/2020 17:44
+* Last modif	: 19/10/2020 11:44
 * Description	: Classe de fonctions en tout genre
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -591,9 +591,10 @@ public static function clean_text( $txt )
 	return str_replace( "  " , " " , preg_replace( "/[^\p{L}0-9\-\_\ \\n]/u" , "" , $txt ) );
   }
 /* --------------------------------------------------------------------------------------------------------------------------------------------- NE GARDE DE LA CHAINE QUE LES CARACTERE ALPHANUMERIQUES */
-public static function only_alphanumeric( $txt , $replace = "" , $spaces = true )
+public static function only_alphanumeric( $txt , $replace = "" , $spaces = true , $tirets = true )
   {
-  	$reg = ( $spaces == true ) ? "#[^A-Z0-9\-\ ]#i" : "#[^A-Z0-9]#i";
+  	$tirets = $tirets ? "\-\—\_" : "";
+  	$reg = ( $spaces == true ) ? "#[^A-Z0-9".$tirets."\ ]#i" : "#[^A-Z0-9".$tirets."]#i";
 	$txt = self::no_accents( $txt );
 	$txt = preg_replace( $reg , $replace , $txt );
 	return $txt;
@@ -6210,6 +6211,21 @@ public static function got_iframes( $html )
 public static function unik_id( $prefix = "id_" )
   {
   	return $prefix.self::microtime(true).rand( 100 , 999 );
+  }
+
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- PROTEGE LES DONNES INSERÉES DANS L'ATTRIBUT VALUE D'UN ELEMENT DE TYPE INPUT */
+/* EN COURS DE DEVELOPPEMENT */
+public static function value( $value , $guillemet = '"' )
+  {
+  	if( $guillemet == '"' )
+  	  {
+  	  }
+	$value = trim( $value );
+	return $value;
   }
 
 
