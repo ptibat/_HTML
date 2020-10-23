@@ -91,8 +91,8 @@ $_HTML = array(
 		"config"			=> array(
 							"maintenance"			=> false,
 							"responsive_images"		=> false,
-							"max_image_display_width" 	=> 1200,
-							"img_size"				=> "f",
+							"max_image_display_width" 	=> 1800,
+							"img_size"				=> "x",
 							"retina_suffix"			=> "2"
 						   ),
 		"db"				=> null,

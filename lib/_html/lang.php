@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
-* Last modif	: 16/10/2020 14:45
+* Last modif	: 21/10/2020 18:10
 * Description	: Classe de gestion des langues
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -40,14 +40,18 @@ class lang {
 
 	public static $type			= "static";
 	public static $language			= "fr";
+	public static $lg_default		= "_fr";
 	public static $options			= array(
-								"type"		=> "file",			/* file , db */
-								"sql_table"		=> "traductions",		/* Nom de la table SQL */	
-								"directory"		=> "/lang/",			/* Répertoire des fichiers de traductions */
-								"ext" 		=> "php",			/* Extension des fichiers de traductions */
-								"redirect"		=> true,
-								"ini_sections" 	=> false,
-								"cookie_time" 	=> 63072000			/* 3600 * 24 * 365 * 2 */
+								"type"			=> "file",			/* file , db */
+								"sql_table"			=> "traductions",		/* Nom de la table SQL */	
+								"directory"			=> "/lang/",		/* Répertoire des fichiers de traductions */
+								"ext" 			=> "php",			/* Extension des fichiers de traductions */
+								"redirect"			=> true,
+								"ini_sections" 		=> false,
+								"cookie_time" 		=> 63072000,		/* 3600 * 24 * 365 * 2 */
+								"lg_default"		=> "fr",
+								"lg_separator"		=> "_",
+								"lg_clean"			=> true
 							);
 
 	public static $data			= array();
@@ -120,6 +124,13 @@ public static function init( $options = array() )
 	
 	self::$language = strtolower( $lang );
 	self::load_language();
+
+	/* --------------------------------------------- */
+	
+	if( isset(self::$options["lg_default"]) AND preg_match( "#^[a-z]{2,3}$#i", self::$options["lg_default"] ) )
+	  {
+		self::$lg_default = self::$options["lg_separator"].self::$options["lg_default"];
+	  }
 	
 
 	/* --------------------------------------------- */
@@ -129,7 +140,7 @@ public static function init( $options = array() )
 	if( $_HTML !== null )
 	  {
 	  	$_HTML["lang"] 	= self::$language;
-  	  	$_HTML["lg"]	= "_".$_HTML["lang"];
+  	  	$_HTML["lg"]	= self::$options["lg_separator"].$_HTML["lang"];
 	  }
 	
 	
@@ -285,6 +296,13 @@ public static function get( $wat=null , $html=true )
 	  }
 
 	$text = !is_array($text) ? $text : "";
+
+	/* ---------------------- Si le texte n'est pas trouvé, on cherche dans le dictionnaire commun */
+
+	if( empty($text) AND ( $nb === 1 ) AND isset(self::$data["common"][ $wat[0] ]) AND !is_array(self::$data["common"][ $wat[0] ]) )
+	  {
+	  	$text = self::$data["common"][ $wat[0] ];
+	  }
 	
 	if( ( $html === false ) AND !empty($text) )
 	  {

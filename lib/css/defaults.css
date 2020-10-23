@@ -1,7 +1,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 18/04/2014
-* Last modif	: 06/10/2020 10:24
+* Last modif	: 23/10/2020 12:04
 * Description	: Fichier de config CSS par defaut
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -235,7 +235,7 @@ ul li
 
 ul.number
 	{
-		list-style :			decimal;
+		list-style :		decimal;
 	}
 
 ul.number li
@@ -245,13 +245,13 @@ ul.number li
 
 ul.tiret
 	{
-		list-style :			none;
+		list-style :		none;
 	}
 
 ul.tiret li:before
 	{
 		position :			relative;
-		left :				-8px;
+		left :			-8px;
 		content :			"-";
 	}
 
@@ -268,7 +268,7 @@ ul.virgules > li:not(:last-child)::after
 
 ul.arrows
 	{
-		list-style :			none;
+		list-style :		none;
 		position :			relative;
 	}
 
@@ -722,11 +722,12 @@ select.minimalist
 .notice,
 .tag,
 .important,
-.erreur
+.erreur,
+.error
 	{
 		display :			inline-block;
 		vertical-align :		middle;
-		padding :				4px 6px;
+		padding :			4px 6px;
 		border-radius :		2px;
 	}
 
@@ -735,9 +736,10 @@ select.minimalist
 .notice.big,
 .tag.big,
 .important.big,
-.erreur.big
+.erreur.big,
+.error.big
 	{
-		padding :				12px 20px;
+		padding :			12px 20px;
 	}
 
 div.info,
@@ -745,7 +747,8 @@ div.note,
 div.notice,
 div.tag,
 div.important,
-div.erreur
+div.erreur,
+div.error
 	{
 		display :			block;
 	}
@@ -839,8 +842,9 @@ a.bouton,
 		margin :			2px 0;
 		vertical-align :		middle;
 		cursor :			pointer;
-		text-align :			center;
+		text-align :		center;
 		border :			none;
+		border-radius :		3px;
 
 		-webkit-touch-callout :	none;
 		  -webkit-user-select :	none;
@@ -854,8 +858,8 @@ a.bouton,
 .tag.large
 	{
 		color :			#333333;
-		background-color :		#E3E3E3;
-		padding :			5px 18px 6px 18px;
+		background-color :	#E3E3E3;
+		padding :			5px 18px;
 	}
 
 .bouton.ombre
@@ -996,12 +1000,17 @@ button.bouton.large
 		-webkit-transition :	all 0.15s ease-in;
 		transition :		all 0.15s ease-in;
 	}
+.bouton.animate:before
+	{
+		border-radius :		3px;
+	}
 
 .btn.animate:hover:before,
 .bouton.animate:hover:before
 	{
 		right : 			0;
 	}
+
 
 
 

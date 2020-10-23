@@ -3,8 +3,8 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 07/05/2007
-* Version		: 23.0.1
-* Last modif	: 19/10/2020 11:44
+* Version		: 24.0.1
+* Last modif	: 20/10/2020 15:27
 * Description	: Classe de fonctions en tout genre
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -3112,6 +3112,13 @@ public static function date_int( $date )
   }
 
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------- ALIAS DE LA FONCTION PRINT_R CI-DESSOUS */
+public static function r( ...$args )
+  {
+    return self::print_r( ...$args );
+  }
+
+
 /* --------------------------------------------------------------------------------------------------------------------------------------------- AFFICHE UN PRINT_R D'UN TABLEAU COLORÉ */
 public static function print_r( $arr , $return = false , $from_print_r = false , $show_array = true )
   {
@@ -3129,7 +3136,7 @@ public static function print_r( $arr , $return = false , $from_print_r = false ,
 
 	if( is_array( $data ) )
 	  {
-		$html .= "<table border='1' style=\"width:100%;border-spacing:0px;border-collapse:collapse;margin-bottom:4px;".$css_border."\">";
+		$html .= "<table border='1' style=\"width:100%;border-spacing:0px;border-collapse:collapse;margin-bottom:4px;text-align:left;".$css_border."\">";
 
 		if( ( $from_print_r == true ) OR ( $show_array == true ) )
 		  {
@@ -6211,6 +6218,18 @@ public static function got_iframes( $html )
 public static function unik_id( $prefix = "id_" )
   {
   	return $prefix.self::microtime(true).rand( 100 , 999 );
+  }
+
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- FORCE L'AFFICHAGE DES ERREURS */
+
+public static function display_errors()
+  {
+	error_reporting(E_ALL);
+	ini_set( "display_errors", 1 );
   }
 
 

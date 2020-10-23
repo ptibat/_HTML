@@ -1,5 +1,5 @@
 
-19/10/2020
+20/10/2020
 
 age( $date_de_naissance )
 alt( $text , $max = 150 , $guillemet = true )
@@ -56,6 +56,7 @@ delete_path( $path )
 directory_lister( $path , $show="all" , $recursive=false , $sort=NULL , $infos="date:size" , $regex="" )
 directory_size( $path , $recursive = true )
 directory_sort( $a , $b )
+display_errors()
 distance_gps( $lat1, $lng1 , $lat2=null, $lng2=null )
 dl( $file , $filemane , $force = true )
 dl_file_limited( $file , $speed=1000 )
@@ -165,6 +166,7 @@ plain_text()
 please_enable_javascript()
 print_r( $arr , $return = false , $from_print_r = false , $show_array = true )
 quota_disk( $raw = false )
+r( $arr , $return = false , $from_print_r = false , $show_array = true )
 random( $nb_char=8 , $type=1 , $nb_strings=1 )
 random_color()
 random_id()
