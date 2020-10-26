@@ -4,7 +4,7 @@
 * Contact		: @ptibat
 * Dev start		: 17/03/2016
 * Last modif	: 26/10/2020 15:32
-* Description	: Gestion des formulaies
+* Description	: Gestion des formulaires
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
 class formulaire {
