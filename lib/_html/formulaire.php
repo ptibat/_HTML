@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 17/03/2016
-* Last modif	: 02/10/2019 16:33
+* Last modif	: 26/10/2020 15:32
 * Description	: Gestion des formulaies
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -389,14 +389,23 @@ public static function prepare_sql_data( $fields = array() , $post = array() , $
 		  }
 		else if( $type != "separator" )
 		  {
-		  	$data = trim( $post[ $field_name ] );
 
-		  	if( ( $type == "textarea" ) AND ( $clean == true ) )
+		  	if( isset($post[ $field_name ]) )
 		  	  {
-		  		$data = self::clean_tinymce( $data );
-		  	  }
+		  		$data = trim( $post[ $field_name ] );
 
-			$sql_data[ $field_name ] = isset($post[ $field_name ]) ? $data : ( isset($sql_data[ $field_name ]) ? $sql_data[ $field_name ] : "" );
+			  	if( ( $type == "textarea" ) AND ( $clean == true ) )
+			  	  {
+			  		$data = self::clean_tinymce( $data );
+			  	  }
+
+				$sql_data[ $field_name ] = $data;
+
+		  	  }
+		  	else
+		  	  {
+				$sql_data[ $field_name ] = isset($sql_data[ $field_name ]) ? $sql_data[ $field_name ] : "";
+		  	  }
 		  }
 	  }
 
