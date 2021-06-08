@@ -3,8 +3,8 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 07/05/2007
-* Version		: 26.0
-* Last modif	: 22/04/2021 10:20
+* Version		: 26.1
+* Last modif	: 08/06/2021 10:50
 * Description	: Classe de fonctions en tout genre
 * Required 		: PHP 7
 --------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -20,6 +20,7 @@ class functions {
 	private static $directory_sort	= "name";				/* Tri par defaut du listing des répertoires */
 	public static  $php_user		= "";					/* Nom du compte utilisateur connecté avec PHP Auth */
 
+
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOYE UNE ERREUR LORS DE L'EXECUTION D'UNE FONCTION INEXISTANTE */
 public static function __callStatic( $m , $a )
   {
@@ -32,7 +33,7 @@ public static function __callStatic( $m , $a )
 public static function root()
   {
 	global $_HTML;
-	return ( isset($_HTML) AND isset($_HTML["ROOT"]) ) ? $_HTML["ROOT"] : "";
+	return ( isset($_HTML) AND isset($_HTML["paths"]["ROOT"]) ) ? $_HTML["paths"]["ROOT"] : "";
   }
 
 
@@ -6239,7 +6240,7 @@ public static function display_errors()
 
 
 
-/* --------------------------------------------------------------------------------------------------------------------------------------------- FORCE L'AFFICHAGE DES ERREURS */
+/* --------------------------------------------------------------------------------------------------------------------------------------------- GENÈRE UN TABLEAU AVEC PARENTS / ENFANTS */
 
 public static function tree( $data = array() , $options = array() )
   {
@@ -6248,7 +6249,6 @@ public static function tree( $data = array() , $options = array() )
 		"parent_id" 	=> "parent_id",
 		"levels" 		=> null
 	);
-
 
 	$options		= is_array($options) ? array_merge( $default , $options ) : $default;
   	$tree 		= array();
