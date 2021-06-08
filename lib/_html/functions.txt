@@ -1,5 +1,5 @@
 
-20/10/2020
+13/11/2020
 
 age( $date_de_naissance )
 alt( $text , $max = 150 , $guillemet = true )
@@ -210,6 +210,7 @@ timezone()
 time_in_seconds( $time )
 time_to_date( $time , $format="fr" , $heure=false )
 tracker( $file=null )
+tree( $data = array() , $id = "id" , $parent_id = "parent_id" )
 ttf_euro_symbol()
 twitter( $login , $password , $message )
 twitterify( $data )

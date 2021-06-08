@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 04/11/2008
-* Last modif	: 21/10/2020 18:10
+* Last modif	: 19/05/2021 10:46
 * Description	: Classe de gestion des langues
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -275,9 +275,10 @@ public static function load_language( $language=null )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE UN TEXTE */
 public static function get( $wat=null , $html=true )
   {
-  	$text	= "";
-  	$wat	= explode( "/" , $wat );
-  	$nb	= count( $wat );
+  	$text		= "";
+  	$wat		= explode( "/" , $wat );
+  	$nb		= count( $wat );
+  	$if_empty 	= "";
 
 	if( isset( self::$data[ $wat[0] ] ) )
 	  {
@@ -295,7 +296,15 @@ public static function get( $wat=null , $html=true )
 		  }
 	  }
 
-	$text = !is_array($text) ? $text : "";
+	if( is_array($text) )
+	  {
+		$text = str_replace( "_" , " " , end($wat) ); 		/* retourne le nom de la variable si aucune donnée n'existe... */
+	  }
+	else
+	  {
+		$text = $text;
+	  }
+
 
 	/* ---------------------- Si le texte n'est pas trouvé, on cherche dans le dictionnaire commun */
 

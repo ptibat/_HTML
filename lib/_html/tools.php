@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 21/01/2013
-* Last modif	: 14/10/2020 17:14
+* Last modif	: 20/05/2021 14:32
 * Description	: Extension de la class APP avec un ensemble de fonctions communes à plusieurs templates
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -513,8 +513,16 @@ public function send_mail( $options = array() )
 		  {
 			foreach( $options["to"] as $email => $name )
 			  {
+			  	if( isset($name) AND !empty($name) AND is_numeric($email) )
+			  	  {
+				  	$email	= trim( $name );
+				  	$name		= "";
+			  	  }
+			  	else
+			  	  {
 			  	$email	= trim( $email );
 			  	$name		= trim( $name );
+			  	  }
 
 			  	if( functions::check_email($email) )
 			  	  {

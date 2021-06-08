@@ -3,9 +3,10 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 07/05/2007
-* Version		: 24.0.1
-* Last modif	: 20/10/2020 15:27
+* Version		: 26.0
+* Last modif	: 22/04/2021 10:20
 * Description	: Classe de fonctions en tout genre
+* Required 		: PHP 7
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
 class functions {
@@ -2370,7 +2371,8 @@ public static function is_robot( $user_agent=null , $host=null  )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOIE LE NOM DE L'OS */
 public static function os( $ua=null )
   {
-	/* Updated : 06/11/2019 */
+
+	/* Updated : 02/02/2021 */
 
 	$ua = ( $ua !== null ) ? $ua : self::ua();
 
@@ -2402,6 +2404,7 @@ public static function os( $ua=null )
 	else if(preg_match("#BlackBerry#i", $ua))						{$os = "BlackBerry";}
 
 	/* --- MAC */
+	else if(preg_match("#Mac OS X 10.16#i", $ua))					{$os = "macOS Big Sur";}
 	else if(preg_match("#Mac OS X 10.15#i", $ua))					{$os = "macOS Catalina";}
 	else if(preg_match("#Mac OS X 10.14#i", $ua))					{$os = "macOS Mojave";}
 	else if(preg_match("#Mac OS X 10.13#i", $ua))					{$os = "macOS High Sierra";}
@@ -6231,6 +6234,59 @@ public static function display_errors()
 	error_reporting(E_ALL);
 	ini_set( "display_errors", 1 );
   }
+
+
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- FORCE L'AFFICHAGE DES ERREURS */
+
+public static function tree( $data = array() , $options = array() )
+  {
+	$default = array( 
+		"id"			=> "id",
+		"parent_id" 	=> "parent_id",
+		"levels" 		=> null
+	);
+
+
+	$options		= is_array($options) ? array_merge( $default , $options ) : $default;
+  	$tree 		= array();
+	$levels 		= ( !is_null($options["levels"]) AND preg_match( "#^([a-z0-9-_]){1,}$#i" , $options["levels"] ) ) ? $options["levels"] : null;
+	$id 			= $options["id"];
+	$parent_id 		= $options["parent_id"];
+
+	foreach( $data as &$item )
+	  {
+		if( !is_null($levels) )
+		  {
+	  		$item[$levels] = 0;
+		  }
+
+	  	$tree[$item[$parent_id]][] = &$item;
+	  } 
+
+	unset($item);
+
+	foreach( $data as &$item )
+	  {
+		if( isset($tree[$item[$id]]) )
+		  {
+		  	$item["childs"] = $tree[$item[$id]];
+
+			if( !is_null($levels) )
+			  {
+			  	foreach( $item["childs"] as $n => $child )
+			  	  {
+				  	$item["childs"][$n][$levels] = $item[$levels] + 1;
+			  	  }
+			  }
+		  }
+	  }
+
+  	return $tree[0];
+  }
+
 
 
 
