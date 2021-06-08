@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 07/05/2007
-* Version		: 26.1
+* Version		: 26.1.1
 * Last modif	: 08/06/2021 10:50
 * Description	: Classe de fonctions en tout genre
 * Required 		: PHP 7
@@ -1207,7 +1207,7 @@ public static function sha1_dekod( $string )
   }
 
 
-/* --------------------------------------------------------------------------------------------------------------------------------------------- CRYPTAGE DE CHAINE SIMPLE */
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CHIFFRE UNE CHAINE SIMPLE */
 public static function encode( $value )
   {
 	$return = "";
@@ -1221,7 +1221,7 @@ public static function encode( $value )
   }
 
 
-/* --------------------------------------------------------------------------------------------------------------------------------------------- DECRYPTAGE DE CHAINE SIMPLE */
+/* --------------------------------------------------------------------------------------------------------------------------------------------- DECHIFFRE UNE CHAINE SIMPLE */
 public static function decode( $value )
   {
 	$return	= "";
@@ -2373,7 +2373,7 @@ public static function is_robot( $user_agent=null , $host=null  )
 public static function os( $ua=null )
   {
 
-	/* Updated : 02/02/2021 */
+	/* Updated : 08/06/2021 */
 
 	$ua = ( $ua !== null ) ? $ua : self::ua();
 
@@ -2405,7 +2405,9 @@ public static function os( $ua=null )
 	else if(preg_match("#BlackBerry#i", $ua))						{$os = "BlackBerry";}
 
 	/* --- MAC */
+	else if(preg_match("#Mac OS X 11.0#i", $ua))					{$os = "macOS Big Sur";}
 	else if(preg_match("#Mac OS X 10.16#i", $ua))					{$os = "macOS Big Sur";}
+	else if(preg_match("#Mac OS X 10.15_#i", $ua))					{$os = "macOS Big Sur";}
 	else if(preg_match("#Mac OS X 10.15#i", $ua))					{$os = "macOS Catalina";}
 	else if(preg_match("#Mac OS X 10.14#i", $ua))					{$os = "macOS Mojave";}
 	else if(preg_match("#Mac OS X 10.13#i", $ua))					{$os = "macOS High Sierra";}
