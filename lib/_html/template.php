@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Contact		: @ptibat
 * Dev start		: 17/04/2014
-* Last modif	: 15/10/2020 12:18
+* Last modif	: 08/06/2021 16:43
 * Description	: Gestion du template
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -264,24 +264,27 @@ $this->output .= "
 			  	$css_file	= $css_file[1];
 			  }
 	  	  
-			if( ( $this->options["amp"] == true ) OR ( $this->options["css_inline"] == true ) OR ( is_array($css_file) AND ( $css_file[1] == true ) ) )
-			  {
-				$css_file	= is_array($css_file) ? $css_file[0] : $css_file;
-				$url		= functions::url_parameters( $_SERVER["DOCUMENT_ROOT"].$css_file , true );
-
-				if( is_file( $url ) )
+		  	if( !empty($css_file) )
+		  	  {
+				if( ( $this->options["amp"] == true ) OR ( $this->options["css_inline"] == true ) OR ( is_array($css_file) AND ( $css_file[1] == true ) ) )
 				  {
-					$css_inline .= $this->css_inline( $url );
+					$css_file	= is_array($css_file) ? $css_file[0] : $css_file;
+					$url		= functions::url_parameters( $_SERVER["DOCUMENT_ROOT"].$css_file , true );
+
+					if( is_file( $url ) )
+					  {
+						$css_inline .= $this->css_inline( $url );
+					  }
+					else
+					  {
+						$this->output .= "\n\t<link rel='stylesheet' href='".$css_file."' ".( isset($media) ? "media='".$media."' " : "" )."/>";
+					  }
 				  }
 				else
 				  {
 					$this->output .= "\n\t<link rel='stylesheet' href='".$css_file."' ".( isset($media) ? "media='".$media."' " : "" )."/>";
 				  }
-			  }
-			else
-			  {
-				$this->output .= "\n\t<link rel='stylesheet' href='".$css_file."' ".( isset($media) ? "media='".$media."' " : "" )."/>";
-			  }
+		  	  }
 	  	  }
 
 		if( !empty($css_inline) )
@@ -407,7 +410,10 @@ public function html_footer()
 	  {
 		foreach( $this->html["js_files"] as $file )
 		  {
-			$this->output .= "\n<script src='".$file."'></script>";
+		  	if( !empty($file) )
+		  	  {
+				$this->output .= "\n<script src='".$file."'></script>";
+		  	  }
 		  }
 	  }
 
