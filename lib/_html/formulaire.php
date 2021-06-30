@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 17/03/2016
-* Last modif	: 30/06/2021 17:25
+* Last modif	: 30/06/2021 17:46
 * Description	: Gestion des formulaires
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -149,7 +149,7 @@ public static function champ_formulaire( $options = array() )
 	  	  {
 	  	  	$field 		= "";
 	  	  	$type 		= $options["type"];
-	  	  	$name 		= $line["name"];
+	  	  	$name 		= $line["name"].( ( isset($options["multiple"]) AND ( $options["multiple"] == true ) ) ? "[]" : "" );
 	  	  	$id			= $line["id"];
 	  	  	$class		= !empty($options["class"]) ? " class='".$options["class"]."'" : "";
 	  	  	$pattern		= !empty($options["pattern"]) ? " pattern=\"".$options["pattern"]."\"" : "";
@@ -190,7 +190,7 @@ public static function champ_formulaire( $options = array() )
 					  {
 				  	  	foreach( $options["select"] as $val => $text )
 				  	  	  {
-				  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected" : "" ).">".$text."</option>";
+				  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected data-current-selected='true'" : "" ).">".$text."</option>";
 				  	  	  }
 					  }
 					else
@@ -203,7 +203,7 @@ public static function champ_formulaire( $options = array() )
 
 								foreach( $data as $val => $text )
 						  	  	  {
-						  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected" : "" ).">".$text."</option>";
+						  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected data-current-selected='true'" : "" ).">".$text."</option>";
 						  	  	  }
 	
 								$field .= "</optgroup>";
@@ -211,7 +211,7 @@ public static function champ_formulaire( $options = array() )
 				  	  	  	  }
 							else
 							  {
-				  	  	  		$field .= "<option value='".$group."'".( ( !is_null($value) AND ( $value == $group ) ) ? " selected" : "" ).">".$data."</option>";
+				  	  	  		$field .= "<option value='".$group."'".( ( !is_null($value) AND ( $value == $group ) ) ? " selected data-current-selected='true'" : "" ).">".$data."</option>";
 							  }
 				  	  	  }
 					  }
