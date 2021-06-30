@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 17/03/2016
-* Last modif	: 30/06/2021 17:46
+* Last modif	: 30/06/2021 17:56
 * Description	: Gestion des formulaires
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -378,7 +378,7 @@ public static function get_data( $fields = array() , $data = array() )
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LA VARIABLE sql_data AVEC LES DONNÉES DU POST */
-public static function prepare_sql_data( $fields = array() , $post = array() , $sql_data = array() , $clean = true )
+public static function prepare_sql_data( $fields = array() , $post = array() , $sql_data = array() , $clean = true , $multiple_separator = ";" )
   {
 	$fields_names = self::get_fields_names( $fields );
 
@@ -393,7 +393,14 @@ public static function prepare_sql_data( $fields = array() , $post = array() , $
 
 		  	if( isset($post[ $field_name ]) )
 		  	  {
-		  		$data = trim( $post[ $field_name ] );
+		  		if( is_array($post[ $field_name ]) )
+		  		  {
+		  	  		$data = implode( $multiple_separator , $post[ $field_name ] );
+		  		  }
+		  		else
+		  		  {
+		  		  	$data = trim( $post[ $field_name ] );
+		  		  }
 
 			  	if( ( $type == "textarea" ) AND ( $clean == true ) )
 			  	  {
