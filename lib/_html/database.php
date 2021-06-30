@@ -1,9 +1,9 @@
 <?php
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 18/02/2013
-* Last modif	: 15/10/2020 13:12
+* Last modif	: 30/06/2021 10:18
 * Description	: Classe de gestion de base de données SQL // PDO
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -23,6 +23,7 @@ class database {
 	get_array( $query , $table=false )
 	get_colonnes( $table )
 	get_error()
+	get_values( $query , $colonne_id = 0 )
 	insert( $query )
 	last_error()
 	pagination( $query , $nb_results_par_page , $nav_link , $current , $id="pagination" , $class="pagination" )
@@ -57,7 +58,7 @@ public function __construct( $options = array() )
 		"user" 		=> null,
 		"password"		=> null,
 		"charset"		=> "utf8",
-		"persistant"	=> true
+		"persistent"	=> false
 	);
 
 	$options = is_array($options) ? array_merge( $default , $options ) : $default;
@@ -101,7 +102,7 @@ private function database_connect()
 						$this->options["user"],
 						$this->options["password"],
 						array(
-							PDO::ATTR_PERSISTENT 		=> $this->options["persistant"],
+							PDO::ATTR_PERSISTENT 		=> $this->options["persistent"],
 							PDO::MYSQL_ATTR_FOUND_ROWS 	=> true
 						)
 				);
@@ -117,7 +118,7 @@ private function database_connect()
 					$this->options["user"],
 					$this->options["password"],
 					array(
-						PDO::ATTR_PERSISTENT 		=> $this->options["persistant"],
+						PDO::ATTR_PERSISTENT 		=> $this->options["persistent"],
 						PDO::MYSQL_ATTR_FOUND_ROWS 	=> true,					/* ERROR POSSIBLE */
 						PDO::ATTR_ERRMODE			=> PDO::ERRMODE_EXCEPTION,
 						PDO::ATTR_DEFAULT_FETCH_MODE	=> PDO::FETCH_ASSOC
@@ -189,7 +190,11 @@ private function error( $e )
 
 	if( isset($_HTML["debug"]) AND ( $_HTML["debug"] == true ) )
 	  {
-		$message .= "<br /><b>DEBUG :</b><br /><br />".$this->debug(1)."<br /><br />";
+	  	$debug = $this->debug(1);
+	  	if( !empty($debug) )
+	  	  {
+			$message .= "<br /><b>DEBUG :</b><br /><br />".$this->debug(1)."<br /><br />";
+	  	  }
 	  }
 
 
@@ -239,7 +244,16 @@ public function query_exec( $query )
   	if( $this->pdo !== null )
   	  {
 	  	$this->current_query = $query;
-  		return $this->pdo->query( $query );
+
+	  	try
+		  {
+  			return $this->pdo->query( $query );
+		  }
+		catch( PDOException $e )
+		  {
+		  	$this->error($e);
+		  }
+
   	  }
 	else
 	  {
@@ -285,7 +299,6 @@ public function query( $query , $num=false )
 
 	  	$data["execution_time"] = $this->execution_time;
 
-
 		return $data;
 	  }
 	catch( PDOException $e )
@@ -299,16 +312,24 @@ public function query( $query , $num=false )
 public function row( $query , $num=false )
   {
   	$this->exec_time("start");
-  	
-  	$query = $this->query_exec( $query );
 
-	if( $query )
+  	try
 	  {
-		$data = $query->fetch( ( $num === true ) ? PDO::FETCH_NUM : PDO::FETCH_ASSOC );
+	  	$query = $this->query_exec( $query );
+
+		if( $query )
+		  {
+			$data = $query->fetch( ( $num === true ) ? PDO::FETCH_NUM : PDO::FETCH_ASSOC );
+		  }
+		else
+		  {
+		  	$data = "Erreur de requête : ".$this->last_error()["error"];
+		  }
+
 	  }
-	else
+	catch( PDOException $e )
 	  {
-	  	$data = "Erreur de requête : ".$this->last_error()["error"];
+	  	$this->error($e);
 	  }
 
   	$this->exec_time("end");
@@ -325,14 +346,22 @@ public function insert( $query )
   	
   	$return = false;
 
-  	if( $this->query_exec( $query ) )
-  	  {
-  	  	$id = $this->pdo->lastInsertId();
-		$return = ( !empty($id) AND is_numeric($id) AND ( $id > 0 ) ) ? $id : true;
-  	  }
-	else
+  	try
 	  {
-	  	$this->last_error();
+	  	if( $this->query_exec( $query ) )
+	  	  {
+	  	  	$id = $this->pdo->lastInsertId();
+			$return = ( !empty($id) AND is_numeric($id) AND ( $id > 0 ) ) ? $id : true;
+	  	  }
+		else
+		  {
+		  	$this->last_error();
+		  }
+
+	  }
+	catch( PDOException $e )
+	  {
+	  	$this->error($e);
 	  }
 
   	$this->exec_time("end");
@@ -349,13 +378,21 @@ public function update( $query )
   	
   	$return = false;
 
-  	if( $q = $this->query_exec( $query ) )
-  	  {
-		$return = $q->rowCount();
-  	  }
-	else
+  	try
 	  {
-	  	$this->last_error();
+	  	if( $q = $this->query_exec( $query ) )
+	  	  {
+			$return = $q->rowCount();
+	  	  }
+		else
+		  {
+		  	$this->last_error();
+		  }
+
+	  }
+	catch( PDOException $e )
+	  {
+	  	$this->error($e);
 	  }
 
   	$this->exec_time("end");
@@ -372,13 +409,21 @@ public function delete( $query )
   	
   	$return = false;
 
-  	if( $q = $this->query_exec( $query ) )
-  	  {
-		$return = $q->rowCount();
-  	  }
-	else
+  	try
 	  {
-	  	$this->last_error();
+	  	if( $q = $this->query_exec( $query ) )
+	  	  {
+			$return = $q->rowCount();
+	  	  }
+		else
+		  {
+		  	$this->last_error();
+		  }
+
+	  }
+	catch( PDOException $e )
+	  {
+	  	$this->error($e);
 	  }
 
   	$this->exec_time("end");
@@ -408,21 +453,31 @@ public function get( $query )
   {
   	$this->exec_time("start");
 
-  	$data		= "";
-  	$query	= $this->query_exec( $query );
-
-	if( $query )
+  	try
 	  {
-		$data = $query->fetch( PDO::FETCH_NUM );
-		$data = isset($data[0]) ? $data[0] : "";
-	  }
-	else
-	  {
-	  	$error = $this->pdo->errorInfo();
-	  	$error = $error[2];
+	  
+	  	$data		= "";
+	  	$query	= $this->query_exec( $query );
 
-	  	echo "Erreur de requête : ".$error;exit;
+		if( $query )
+		  {
+			$data = $query->fetch( PDO::FETCH_NUM );
+			$data = isset($data[0]) ? $data[0] : "";
+		  }
+		else
+		  {
+		  	$error = $this->pdo->errorInfo();
+		  	$error = $error[2];
+
+		  	echo "Erreur de requête : ".$error;exit;
+		  }
+
 	  }
+	catch( PDOException $e )
+	  {
+	  	$this->error($e);
+	  }
+
   	
   	$this->exec_time("end");
   	
@@ -501,16 +556,19 @@ public function debug( $return = null )
 	$error 	= $this->get_error();
 	$html		= "";
 	$tpl_titre	= "<div style='padding:12px 20px;background:#E27A7A;color:#fff;white-space:pre-line;font-family:monospace;font-size:15px;'>{%DATA%}</div>";
-	$tpl_data	= "<div style='padding:20px;margin-bottom:40px;background:#FCF4F4;color:#AA1111;white-space:pre-wrap;font-family:monospace;font-size:13px;'>{%DATA%}</div>";
-	
+	$tpl_data	= "<div style='padding:20px;margin-bottom:40px;background:#FFFAFA;color:#AA1111;white-space:pre-wrap;font-family:monospace;font-size:13px;'>{%DATA%}</div>";
+
 	if( $error["state"] === true )
 	  {
 		$html .= str_replace( "{%DATA%}" , "ERREUR" , $tpl_titre );
 		$html .= str_replace( "{%DATA%}" , $error["msg"] , $tpl_data );
 	  }
 
-	$html .= str_replace( "{%DATA%}" , "REQUÊTE" , $tpl_titre );
-	$html .= str_replace( "{%DATA%}" , $this->current_query , $tpl_data );
+	if( !empty($this->current_query) )
+	  {
+		$html .= str_replace( "{%DATA%}" , "REQUÊTE" , $tpl_titre );
+		$html .= str_replace( "{%DATA%}" , $this->current_query , $tpl_data );
+	  }
 
 	if( is_array( $this->last_error ) AND isset($this->last_error["time"]) AND isset($this->last_error["error"]) AND !empty($this->last_error["error"]) )
 	  {
@@ -751,17 +809,18 @@ public function enum_values( $table , $field )
 
 
 
-/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES RESULTATS D'UNE SEUL COLONNE SOUS FORME DE TABLEAU */
-public function get_values( $query )
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE LES RESULTATS D'UNE SEULE COLONNE SOUS FORME DE TABLEAU */
+public function get_values( $query , $colonne_id = 0 )
   {
 	$return 		= array();
+	$colonne_id 	= is_numeric($colonne_id) ? $colonne_id : 0;
 	$query		= $this->query( $query , true );
 
 	if( $query["nb"] > 0 )
 	  {
 		foreach( $query["data"] as $row )
 		  {
-			$return[] = $row[0];
+			$return[] = $row[ $colonne_id ];
 		  }
 	  }
 
@@ -794,7 +853,7 @@ public function get_error()
   {
   	$return = array(
   		"state" 	=> false,
-  		"msg"	=> "",
+  		"msg"		=> "",
   		"data"	=> array()
   	);
 
