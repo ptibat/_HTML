@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 17/03/2016
-* Last modif	: 26/10/2020 15:32
+* Last modif	: 30/06/2021 17:25
 * Description	: Gestion des formulaires
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -92,7 +92,7 @@ public static function champ_formulaire( $options = array() )
 		"required"		=> false,
 		"multilang"		=> false,
 		"create_only"	=> false,
-		"modif_only"		=> false,
+		"modif_only"	=> false,
 		"lines"		=> array(),
 		"type"		=> "text",		/* text, date, password, textarea, select ... */
 		"id"			=> null,
@@ -102,9 +102,10 @@ public static function champ_formulaire( $options = array() )
 		"pattern"		=> "",
 		"extras"		=> "",
 		"html_before"	=> "",
-		"html_after"		=> "",
+		"html_after"	=> "",
 		"radio"		=> array(),		/* Valeurs possibles pour des puces radio */
 		"select"		=> array(),		/* Valeurs possibles pour un select */
+		"multiple"		=> false,
 		"value"		=> null,
 		"data"		=> null
 	);
@@ -150,12 +151,12 @@ public static function champ_formulaire( $options = array() )
 	  	  	$type 		= $options["type"];
 	  	  	$name 		= $line["name"];
 	  	  	$id			= $line["id"];
-	  	  	$class			= !empty($options["class"]) ? " class='".$options["class"]."'" : "";
+	  	  	$class		= !empty($options["class"]) ? " class='".$options["class"]."'" : "";
 	  	  	$pattern		= !empty($options["pattern"]) ? " pattern=\"".$options["pattern"]."\"" : "";
 	  	  	$extras		= !empty($options["extras"]) ? " ".$options["extras"] : "";
-	  	  	$placeholder		= !empty($options["placeholder"]) ? " placeholder='".$options["placeholder"]."'" : "";
+	  	  	$placeholder	= !empty($options["placeholder"]) ? " placeholder='".$options["placeholder"]."'" : "";
 	  	  	$required		= ( $options["required"] === true ) ? " required" : "";
-			$value			= ( is_array($options["data"]) AND isset($options["data"][$name]) ) ? $options["data"][$name] : ( ( isset($options["value"]) AND !is_null($options["value"]) ) ? $options["value"] : null );
+			$value		= ( is_array($options["data"]) AND isset($options["data"][$name]) ) ? $options["data"][$name] : ( ( isset($options["value"]) AND !is_null($options["value"]) ) ? $options["value"] : null );
 			$commons		= "name='".$name."' id='".$id."'".$class.$pattern.$required.$placeholder.$extras;
 
 
@@ -181,7 +182,7 @@ public static function champ_formulaire( $options = array() )
 			else if( $type == "select" )
 			  {
 			  	$field .= "
-			  	<select ".$commons.">";
+			  	<select ".$commons.( ( isset($options["multiple"]) AND ( $options["multiple"] == true ) ) ? " multiple" : "" ).">";
 			  
 			  	if( is_array($options["select"]) AND !empty($options["select"]) )
 			  	  {
