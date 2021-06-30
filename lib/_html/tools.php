@@ -1,9 +1,9 @@
 <?php
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 21/01/2013
-* Last modif	: 20/05/2021 14:32
+* Last modif	: 28/06/2021 10:16
 * Description	: Extension de la class APP avec un ensemble de fonctions communes à plusieurs templates
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -20,7 +20,6 @@ class tools {
 	affichage_select_option( $row , $value , $field , $current_id = null , $current_parent = null , $level = 0 )
 	btn_confirm( $options = array() )
 	build_parents_array( array $elements , $parentId = 0 )
-	clean_tinymce_firefox( $data )
 	code_google_tag_manager()
 	code_google_tag_manager_amp()
 	config()
@@ -513,16 +512,8 @@ public function send_mail( $options = array() )
 		  {
 			foreach( $options["to"] as $email => $name )
 			  {
-			  	if( isset($name) AND !empty($name) AND is_numeric($email) )
-			  	  {
-				  	$email	= trim( $name );
-				  	$name		= "";
-			  	  }
-			  	else
-			  	  {
 			  	$email	= trim( $email );
 			  	$name		= trim( $name );
-			  	  }
 
 			  	if( functions::check_email($email) )
 			  	  {
@@ -771,14 +762,6 @@ public function detect_adblock()
 
 
 
-/* --------------------------------------------------------------------------------------------------------------------------------------------- CORRECTIF POUR FIREFOX vs TINYMCE */
-public function clean_tinymce_firefox( $data )
-  {
-	return preg_replace( "#<div>(\s+|\xC2\xA0)<\/div>#u" , "" , $data );
-  }
-
-
-
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- ENREGISTRE UN LOG EN BASE DE DONNÉES */
@@ -816,6 +799,8 @@ public function log( $text , $type="log" )
 
 
   }
+
+
 
 
 

@@ -1,10 +1,10 @@
 <?php
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 07/05/2007
-* Version		: 26.1.1
-* Last modif	: 08/06/2021 10:50
+* Version		: 26.1.3
+* Last modif	: 30/06/2021 10:21
 * Description	: Classe de fonctions en tout genre
 * Required 		: PHP 7
 --------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -6249,7 +6249,8 @@ public static function tree( $data = array() , $options = array() )
 	$default = array( 
 		"id"			=> "id",
 		"parent_id" 	=> "parent_id",
-		"levels" 		=> null
+		"levels" 		=> null,
+		"use_real_ids"  	=> true
 	);
 
 	$options		= is_array($options) ? array_merge( $default , $options ) : $default;
@@ -6265,7 +6266,15 @@ public static function tree( $data = array() , $options = array() )
 	  		$item[$levels] = 0;
 		  }
 
-	  	$tree[$item[$parent_id]][] = &$item;
+		if( $options["use_real_ids"] == true )
+		  {
+	  		$tree[$item[$parent_id]][ $item[$id] ] = &$item;
+		  }
+		else
+		  {
+	  		$tree[$item[$parent_id]][] = &$item;
+		  }
+
 	  } 
 
 	unset($item);
@@ -6291,6 +6300,14 @@ public static function tree( $data = array() , $options = array() )
 
 
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CORRECTIF POUR FIREFOX vs TINYMCE */
+public static function clean_tinymce_firefox( $data )
+  {
+	return preg_replace( "#<div>(\s+|\xC2\xA0)<\/div>#u" , "" , $data );
+  }
+
+
+
 
 
 
@@ -6305,8 +6322,7 @@ public static function value( $value , $guillemet = '"' )
 	return $value;
   }
 
-
-
+  
 
 
 /**

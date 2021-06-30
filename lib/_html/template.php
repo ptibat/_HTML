@@ -1,9 +1,9 @@
 <?php
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 17/04/2014
-* Last modif	: 08/06/2021 16:43
+* Last modif	: 09/06/2021 17:24
 * Description	: Gestion du template
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -479,6 +479,15 @@ public function html_footer()
 		  {
 			$this->output .= "\n<script type=\"application/ld+json\">\n[".implode( ",\n" , $json )."]\n</script>";
 		  }
+	  }
+	
+	
+	
+	/* --------------------------------------------------------------------------------------- TIMESTAMP */
+ 
+	if( isset($this->html["timestamp"]) AND ( $this->html["timestamp"] == true ) )
+	  {
+		$this->output .= "\n<!-- t:".date( "Y-m-d H:i:s" )." g:".$this->html["execution_time"]." -->";
 	  }
 
 

@@ -1,7 +1,7 @@
 <?php
 
 /** ----------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 07/05/2007
 * Last modif	: 08/06/2020 10:05
 * Description	: Classe de fonctions pour la manipulation d'images

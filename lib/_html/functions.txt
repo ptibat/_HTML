@@ -1,5 +1,5 @@
 
-08/06/2021
+30/06/2021
 
 _( $string , $quotes=false , $transform="none" )
 age( $date_de_naissance )
@@ -28,6 +28,7 @@ check_siret( $numsiret )
 check_url( $url )
 clean_cache( $time=0 )
 clean_text( $txt )
+clean_tinymce_firefox( $data )
 code_commande( $code = null , $simple = false )
 color_ip( $ip , $type="HEX" )
 colorify( $str , $return = "hexa" )

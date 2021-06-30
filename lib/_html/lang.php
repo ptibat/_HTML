@@ -1,9 +1,9 @@
 <?php
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 04/11/2008
-* Last modif	: 19/05/2021 10:46
+* Last modif	: 03/06/2021 17:42
 * Description	: Classe de gestion des langues
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -32,6 +32,22 @@ class lang {
 	sql_data2( $sql_data )
 	update( $query )
 	version( $min=null )
+
+
+	INIT :
+
+	lang::init(array(
+		"type"		=> "db",
+		"sql_table"		=> "traductions",
+		"lg_separator"	=> "_"
+	));
+
+	lang::init(array(
+		"directory"		=> APP_DOC_ROOT."/lang/",
+		"lg_separator"	=> "_"
+	));
+
+
 */
 
 
@@ -275,10 +291,9 @@ public static function load_language( $language=null )
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RETOURNE UN TEXTE */
 public static function get( $wat=null , $html=true )
   {
-  	$text		= "";
-  	$wat		= explode( "/" , $wat );
-  	$nb		= count( $wat );
-  	$if_empty 	= "";
+  	$text	= "";
+  	$wat	= explode( "/" , $wat );
+  	$nb	= count( $wat );
 
 	if( isset( self::$data[ $wat[0] ] ) )
 	  {
@@ -296,15 +311,7 @@ public static function get( $wat=null , $html=true )
 		  }
 	  }
 
-	if( is_array($text) )
-	  {
-		$text = str_replace( "_" , " " , end($wat) ); 		/* retourne le nom de la variable si aucune donnée n'existe... */
-	  }
-	else
-	  {
-		$text = $text;
-	  }
-
+	$text = !is_array($text) ? $text : "";
 
 	/* ---------------------- Si le texte n'est pas trouvé, on cherche dans le dictionnaire commun */
 

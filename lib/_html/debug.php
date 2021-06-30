@@ -1,9 +1,9 @@
 <?php
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 11/12/2008
-* Last modif	: 15/10/2020 16:45
+* Last modif	: 29/06/2021 17:22
 * Description	: Classe gestion des erreurs PHP
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -27,12 +27,15 @@ public function __construct( $options = array() )
 		"log_file"			=> DOC_ROOT."/lib/logs/debug.log",
 		"output"			=> "log",
 		"method"			=> "array",
-		"couleur"			=> "#CC0000",
+		"couleur"			=> "#FA0000",
 		"font"			=> "\"Helvetica Neue\",\"Helvetica\",Arial,sans-serif",
 		"font_mono"			=> "Consolas,\"Andale Mono\",\"Lucida Console\",\"Courier New\",Courier,monospace"
 	);
 
 	$this->options = is_array($options) ? array_merge( $default , $options ) : $default;
+
+	/* E_ALL | E_ERROR | E_WARNING | E_PARSE | E_NOTICE */
+	error_reporting( E_ALL );
 
 	if( 	   isset($_GET["_debug_display_errors"] )
 		OR ( $this->options["force"] === true ) 
@@ -41,14 +44,16 @@ public function __construct( $options = array() )
 	  {
 		ini_set( "display_errors" , 1 );
 		ini_set( "display_startup_errors" , 1 );
-		set_error_handler( array( &$this, "error" ) );
 	  }
 	else
 	  {
-		/* error_reporting( E_ERROR | E_WARNING | E_PARSE | E_NOTICE ); */
-		error_reporting( E_ALL );
-		set_error_handler( array( &$this, "error" ) );
+		ini_set( "display_errors" , 0 );
+		ini_set( "display_startup_errors" , 0 );
 	  }
+
+	set_error_handler( array( &$this , "error" ) );
+	register_shutdown_function( array( &$this , "fatal_error" ) );
+
   }
 
 
@@ -103,7 +108,6 @@ public function error( $niveau_erreur , $message , $fichier , $ligne , $env )
   {
 	$this->nb_errors++;
 
-
 	if( $this->options["output"] == "code" )
 	  {
 		echo functions::show_source_code( $fichier , $ligne );
@@ -114,9 +118,12 @@ public function error( $niveau_erreur , $message , $fichier , $ligne , $env )
 
 	  	/* ------------------------------------------------ FOR SCREEN */
 
+	  	$msg 		= $message;
+	  	$msg 		= preg_replace( "#^Undefined variable: ([a-z0-9-_]+)#im" , "Undefined variable : <span style='display:inline-block;padding:0.2rem 0.4rem;background-color:".$this->options["couleur"].";color:#FFF;border-radius:0.2rem;'>$1</span>" , $msg );
+
 	  	$filename 	= basename($fichier);
 	  	$fichier 	= preg_replace( "#".$filename."$#" , "<b style='font-family:".$this->options["font"].";color:".$this->options["couleur"].";'>".$filename."</b>" , $fichier );
-		$error 	= "<div style='font-family:".$this->options["font_mono"].";background-color:#F0EFEF;border-left:8px solid ".$this->options["couleur"].";padding:8px;color:#000000;font-size:9pt;line-height:11pt;margin-bottom:10px;white-space:pre-wrap;'>ERREUR   : ".$message."\nFICHIER  : ".$fichier." : <b>".$ligne."</b></div>";
+		$error 	= "<div style='font-family:".$this->options["font_mono"].";background-color:#F0EFEF;border-left:8px solid ".$this->options["couleur"].";padding:8px;color:#000000;font-size:9pt;line-height:11pt;margin-bottom:10px;white-space:pre-wrap;'>ERREUR   : ".$msg."\nFICHIER  : ".$fichier." : <span style='display:inline-block;padding:0.2rem 0.4rem;background-color:".$this->options["couleur"].";color:#FFF;border-radius:0.2rem;'>".$ligne."</span></div>";
 
 		$this->errors[$niveau_erreur][] = $error;
 
@@ -201,6 +208,10 @@ public function write_log( $error=NULL )
 
 
 
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- ERREUR FATALE */
+public function fatal_error() {}
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- ENDING */
