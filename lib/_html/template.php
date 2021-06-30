@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 17/04/2014
-* Last modif	: 09/06/2021 17:24
+* Last modif	: 30/06/2021 15:41
 * Description	: Gestion du template
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -258,6 +258,9 @@ $this->output .= "
 			  
 	  	foreach( $this->html["css_files"] as $css_file )
 	  	  {
+
+	  	  	$media = "";
+
 			if( is_array( $css_file ) )
 			  {
 			  	$media 	= $css_file[0];
@@ -277,12 +280,12 @@ $this->output .= "
 					  }
 					else
 					  {
-						$this->output .= "\n\t<link rel='stylesheet' href='".$css_file."' ".( isset($media) ? "media='".$media."' " : "" )."/>";
+						$this->output .= "\n\t<link rel='stylesheet' href='".$css_file."' ".( !empty($media) ? "media='".$media."' " : "" )."/>";
 					  }
 				  }
 				else
 				  {
-					$this->output .= "\n\t<link rel='stylesheet' href='".$css_file."' ".( isset($media) ? "media='".$media."' " : "" )."/>";
+					$this->output .= "\n\t<link rel='stylesheet' href='".$css_file."' ".( !empty($media) ? "media='".$media."' " : "" )."/>";
 				  }
 		  	  }
 	  	  }
