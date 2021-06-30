@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 17/03/2016
-* Last modif	: 30/06/2021 17:56
+* Last modif	: 30/06/2021 18:18
 * Description	: Gestion des formulaires
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -89,25 +89,26 @@ public static function champ_formulaire( $options = array() )
 	global $_HTML;
   
 	$default = array( 
-		"required"		=> false,
-		"multilang"		=> false,
-		"create_only"	=> false,
-		"modif_only"	=> false,
-		"lines"		=> array(),
-		"type"		=> "text",		/* text, date, password, textarea, select ... */
-		"id"			=> null,
-		"name"		=> null,
-		"titre"		=> "",
-		"class"		=> "",
-		"pattern"		=> "",
-		"extras"		=> "",
-		"html_before"	=> "",
-		"html_after"	=> "",
-		"radio"		=> array(),		/* Valeurs possibles pour des puces radio */
-		"select"		=> array(),		/* Valeurs possibles pour un select */
-		"multiple"		=> false,
-		"value"		=> null,
-		"data"		=> null
+		"required"			=> false,
+		"multilang"			=> false,
+		"create_only"		=> false,
+		"modif_only"		=> false,
+		"lines"			=> array(),
+		"type"			=> "text",		/* text, date, password, textarea, select ... */
+		"id"				=> null,
+		"name"			=> null,
+		"titre"			=> "",
+		"class"			=> "",
+		"pattern"			=> "",
+		"extras"			=> "",
+		"html_before"		=> "",
+		"html_after"		=> "",
+		"radio"			=> array(),		/* Valeurs possibles pour des puces radio */
+		"select"			=> array(),		/* Valeurs possibles pour un select */
+		"multiple"			=> false,
+		"value"			=> null,
+		"data"			=> null,
+		"multiple_separator"	=> ";"
 	);
 
 	$options	= is_array($options) ? array_merge( $default , $options ) : $default;
@@ -149,7 +150,8 @@ public static function champ_formulaire( $options = array() )
 	  	  {
 	  	  	$field 		= "";
 	  	  	$type 		= $options["type"];
-	  	  	$name 		= $line["name"].( ( isset($options["multiple"]) AND ( $options["multiple"] == true ) ) ? "[]" : "" );
+	  	  	$multiple 		= ( isset($options["multiple"]) AND ( $options["multiple"] == true ) ) ? true : false;
+	  	  	$name 		= $line["name"];
 	  	  	$id			= $line["id"];
 	  	  	$class		= !empty($options["class"]) ? " class='".$options["class"]."'" : "";
 	  	  	$pattern		= !empty($options["pattern"]) ? " pattern=\"".$options["pattern"]."\"" : "";
@@ -157,7 +159,8 @@ public static function champ_formulaire( $options = array() )
 	  	  	$placeholder	= !empty($options["placeholder"]) ? " placeholder='".$options["placeholder"]."'" : "";
 	  	  	$required		= ( $options["required"] === true ) ? " required" : "";
 			$value		= ( is_array($options["data"]) AND isset($options["data"][$name]) ) ? $options["data"][$name] : ( ( isset($options["value"]) AND !is_null($options["value"]) ) ? $options["value"] : null );
-			$commons		= "name='".$name."' id='".$id."'".$class.$pattern.$required.$placeholder.$extras;
+			$commons		= "name='".$name.( $multiple ? "[]" : "" )."' id='".$id."'".$class.$pattern.$required.$placeholder.$extras;
+
 
 
 			if( preg_match( "#^(button|submit|color|date|datetime|datetime-local|email|month|number|password|search|tel|text|time|url|week)$#" , $options["type"] ) )
@@ -182,15 +185,26 @@ public static function champ_formulaire( $options = array() )
 			else if( $type == "select" )
 			  {
 			  	$field .= "
-			  	<select ".$commons.( ( isset($options["multiple"]) AND ( $options["multiple"] == true ) ) ? " multiple" : "" ).">";
+			  	<select ".$commons.( $multiple ? " multiple" : "" ).">";
 			  
+
+			  	if( !empty($value) AND $multiple )
+			  	  {
+			  	  	$value = explode( $options["multiple_separator"] , $value );
+			  	  }
+			  	else
+			  	  {
+			  	  	$value = array( $value => $value );
+			  	  }
+
+
 			  	if( is_array($options["select"]) AND !empty($options["select"]) )
 			  	  {
 					if( count($options["select"]) == count( $options["select"] , COUNT_RECURSIVE ) )
 					  {
 				  	  	foreach( $options["select"] as $val => $text )
 				  	  	  {
-				  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected data-current-selected='true'" : "" ).">".$text."</option>";
+				  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND in_array( $val , $value ) ) ? " selected data-current-selected='true'" : "" ).">".$text."</option>";
 				  	  	  }
 					  }
 					else
@@ -203,7 +217,7 @@ public static function champ_formulaire( $options = array() )
 
 								foreach( $data as $val => $text )
 						  	  	  {
-						  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND ( $value == $val ) ) ? " selected data-current-selected='true'" : "" ).">".$text."</option>";
+						  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND in_array( $val , $value ) ) ? " selected data-current-selected='true'" : "" ).">".$text."</option>";
 						  	  	  }
 	
 								$field .= "</optgroup>";
@@ -211,7 +225,7 @@ public static function champ_formulaire( $options = array() )
 				  	  	  	  }
 							else
 							  {
-				  	  	  		$field .= "<option value='".$group."'".( ( !is_null($value) AND ( $value == $group ) ) ? " selected data-current-selected='true'" : "" ).">".$data."</option>";
+				  	  	  		$field .= "<option value='".$group."'".( ( !is_null($value) AND in_array( $group , $value ) ) ? " selected data-current-selected='true'" : "" ).">".$data."</option>";
 							  }
 				  	  	  }
 					  }
