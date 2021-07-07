@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 18/02/2013
-* Last modif	: 30/06/2021 10:18
+* Last modif	: 07/07/2021 12:00
 * Description	: Classe de gestion de base de données SQL // PDO
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -24,6 +24,7 @@ class database {
 	get_colonnes( $table )
 	get_error()
 	get_values( $query , $colonne_id = 0 )
+	get_vendor()
 	insert( $query )
 	last_error()
 	pagination( $query , $nb_results_par_page , $nav_link , $current , $id="pagination" , $class="pagination" )
@@ -44,6 +45,8 @@ class database {
 	public $current_query		= "";
 	public $execution_time		= 0;
 	public $last_error		= array( "time" => "" , "error" => "" );
+	public $server_vendor		= "";
+	public $server_version		= "";
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CONSTRUCTEUR */
@@ -125,6 +128,8 @@ private function database_connect()
 					)
 			);
 
+			$this->get_vendor();
+
 		  }
 
 		if( isset($this->options["charset"]) AND !empty($this->options["charset"]) )
@@ -137,6 +142,7 @@ private function database_connect()
 		/* ----------------------------------------------  */
 		
 		$this->clear_login();
+
 
 		/* ---------------------------------------------- */
 		
@@ -205,10 +211,11 @@ private function error( $e )
 	else
 	  {
   		$message = "E.";
-	  	/*
-	  		$_HTML["errors"][] = "Erreur serveur : ".$e->getMessage();
-			return false;
-	  	*/
+
+  		if( isset($_GET["_html_force_debug_database"]) )
+  		  {
+	  		$_HTML["errors"][] = "Erreur serveur : ".$e->getMessage();return false;
+  		  }
 	  }
 
 
@@ -216,6 +223,21 @@ private function error( $e )
 	exit;
 
 
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RECUPERE LE TYPE DE BASE DE DONNÉES (mysql, mariadb, ... ) */
+public function get_vendor()
+  {
+	$query = $this->query( "SHOW VARIABLES like '%version%'" , "key" );
+
+	if( $query["nb"] > 0 )
+	  {
+		$info 			= $query["data"];
+		$this->server_vendor  	= strtok( $info["version_comment"] , " " );
+		$this->server_version 	= $info["version"];
+	  }
   }
   
   
@@ -263,7 +285,7 @@ public function query_exec( $query )
   
   
 /* --------------------------------------------------------------------------------------------------------------------------------------------- EXECUTE UNE REQUETE ET RENVOI LES RESULTATS DANS UN TABLEAU PHP */
-public function query( $query , $num=false )
+public function query( $query , $fetch = false )
   {
   	$data = array(
   		"ok"	 		=> false,
@@ -273,6 +295,20 @@ public function query( $query , $num=false )
   		"msg" 		=> "",
   		"query" 		=> $query,
   	);
+
+	if( ( $fetch === true ) OR ( $fetch === "num" ) )
+	  {
+		$fetch = PDO::FETCH_NUM;
+	  }
+	else if( $fetch === "key" )
+	  {
+		$fetch = PDO::FETCH_KEY_PAIR;
+	  }
+	else
+	  {
+		$fetch = PDO::FETCH_ASSOC;
+	  }
+
 
 	try
 	  {
@@ -284,7 +320,7 @@ public function query( $query , $num=false )
 		if( $query )
 		  {
 		  	$data["ok"]		= true;
-		  	$data["data"]	= $query->fetchAll( ( $num === true ) ? PDO::FETCH_NUM : PDO::FETCH_ASSOC );
+		  	$data["data"]	= $query->fetchAll( $fetch );
 		  	$data["nb"]		= ( $this->options["driver"] == "sqlite" ) ? count( $data["data"] ) : $query->rowCount();
 		  }
 		else
