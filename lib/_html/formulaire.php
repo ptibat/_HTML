@@ -185,9 +185,8 @@ public static function champ_formulaire( $options = array() )
 			else if( $type == "select" )
 			  {
 			  	$field .= "
-			  	<select ".$commons.( $multiple ? " multiple" : "" ).">";
+			  	<select ".$commons.( $multiple ? " multiple %%%MULTIPLE_SIZE%%%" : "" ).">";
 			  
-
 			  	if( !empty($value) AND $multiple )
 			  	  {
 			  	  	$value = explode( $options["multiple_separator"] , $value );
@@ -202,6 +201,8 @@ public static function champ_formulaire( $options = array() )
 			  	  {
 					if( count($options["select"]) == count( $options["select"] , COUNT_RECURSIVE ) )
 					  {
+					  	$nb_options = count( $options["select"] , COUNT_RECURSIVE );
+
 				  	  	foreach( $options["select"] as $val => $text )
 				  	  	  {
 				  	  	  	$field .= "<option value='".$val."'".( ( !is_null($value) AND in_array( $val , $value ) ) ? " selected data-current-selected='true'" : "" ).">".$text."</option>";
@@ -209,6 +210,9 @@ public static function champ_formulaire( $options = array() )
 					  }
 					else
 					  {
+
+					  	$nb_options = ( count( $options["select"] , COUNT_RECURSIVE ) - count($options["select"]) );
+
 				  	  	foreach( $options["select"] as $group => $data )
 				  	  	  {
 				  	  	  	if( is_array( $data ) )
@@ -229,8 +233,11 @@ public static function champ_formulaire( $options = array() )
 							  }
 				  	  	  }
 					  }
+
+					 $field = str_replace( "%%%MULTIPLE_SIZE%%%" , "size='".$nb_options."'" , $field );
+
 			  	  }
-			  		
+
 			  	$field .= "
 			  	</select>";
 			  }
