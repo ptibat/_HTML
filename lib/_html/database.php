@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 18/02/2013
-* Last modif	: 07/07/2021 12:00
+* Last modif	: 09/07/2021 14:48
 * Description	: Classe de gestion de base de données SQL // PDO
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -23,6 +23,7 @@ class database {
 	get_array( $query , $table=false )
 	get_colonnes( $table )
 	get_error()
+	get_tables()
 	get_values( $query , $colonne_id = 0 )
 	get_vendor()
 	insert( $query )
@@ -47,6 +48,8 @@ class database {
 	public $last_error		= array( "time" => "" , "error" => "" );
 	public $server_vendor		= "";
 	public $server_version		= "";
+	public $prefix			= "";
+	public $tables			= array();
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- CONSTRUCTEUR */
@@ -61,7 +64,8 @@ public function __construct( $options = array() )
 		"user" 		=> null,
 		"password"		=> null,
 		"charset"		=> "utf8",
-		"persistent"	=> false
+		"persistent"	=> false,
+		"prefix"		=> ""
 	);
 
 	$options = is_array($options) ? array_merge( $default , $options ) : $default;
@@ -75,7 +79,12 @@ public function __construct( $options = array() )
 	  }
 
 	$this->options = $options;
+
+	$this->prefix = ( ( $this->options["prefix"] != "" ) AND preg_match( "#^[\w_-]+$#" , $this->options["prefix"] ) ) ? $this->options["prefix"] : "";
+
 	$this->database_connect();
+
+	$this->get_tables();
   }
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOYE UNE ERREUR LORS DE L'EXECUTION D'UNE FONCTION INEXISTANTE */
@@ -160,6 +169,23 @@ private function database_connect()
 private function database_disconnect()
   {
 	$this->pdo = null;
+  }
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RÉCUPÈRE LES TABLES DE LA BASE */
+private function get_tables()
+  {
+  	$t 		= "Tables_in_".$this->options["database"];
+	$query 	= $this->query( "SHOW TABLES WHERE ".$t." LIKE '".$this->prefix."%'" );
+
+	if( $query["nb"] > 0 )
+	  {
+	  	foreach( $query["data"] as $a => $table )
+	  	  {
+	  	  	$table = $table[$t];
+	  	  	$this->tables[ preg_replace( "#^".$this->prefix."#" , "" , $table ) ] = $table;
+	  	  }
+	  }
   }
 
 
@@ -919,6 +945,14 @@ public function table_exists( $tablename )
 	$check = $this->pdo->query( "SHOW TABLES LIKE '".$tablename."'" );
 
 	return ( $check AND ( $check->rowCount() > 0) ) ? true : false;
+  }
+  
+  
+  
+/* --------------------------------------------------------------------------------------------------------------------------------------------- RENVOI LE NOM D'UNE TABLE AVEC LE PRFIX S'IL EXISTE */
+public function t( $tablename )
+  {
+	return $this->prefix.$tablename;
   }
 
 
