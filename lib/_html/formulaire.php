@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 17/03/2016
-* Last modif	: 30/06/2021 18:18
+* Last modif	: 13/07/2021 15:41
 * Description	: Gestion des formulaires
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -13,12 +13,12 @@ class formulaire {
 	FUNCTIONS :
 
 	champ_formulaire( $options = array() )
-	clean_tinymce( $fields = array() , $data = array() )
+	clean_tinymce( $data )
 	display( $fields = array() , $data = null )
 	get_data( $fields = array() , $data = array() )
 	get_fields_names( $fields = array() )
 	get_html( $data=array() , $type="table" )
-	prepare_sql_data( $fields = array() , $post = array() , $sql_data = array() )
+	prepare_sql_data( $fields = array() , $post = array() , $sql_data = array() , $clean = true , $multiple_separator = ";" )
 */
 
 
@@ -105,9 +105,10 @@ public static function champ_formulaire( $options = array() )
 		"html_after"		=> "",
 		"radio"			=> array(),		/* Valeurs possibles pour des puces radio */
 		"select"			=> array(),		/* Valeurs possibles pour un select */
-		"multiple"			=> false,
 		"value"			=> null,
 		"data"			=> null,
+		"multiple"			=> false,
+		"multiple_max"		=> null,
 		"multiple_separator"	=> ";"
 	);
 
@@ -234,7 +235,10 @@ public static function champ_formulaire( $options = array() )
 				  	  	  }
 					  }
 
-					 $field = str_replace( "%%%MULTIPLE_SIZE%%%" , "size='".$nb_options."'" , $field );
+
+					$nb_max = ( !is_null($options["multiple_max"]) AND is_numeric($options["multiple_max"]) AND ( $options["multiple_max"] <= $nb_options ) ) ? $options["multiple_max"] : $nb_options;
+
+					$field = str_replace( "%%%MULTIPLE_SIZE%%%" , "size='".$nb_max."'" , $field );
 
 			  	  }
 
