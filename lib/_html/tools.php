@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 21/01/2013
-* Last modif	: 28/06/2021 10:16
+* Last modif	: 29/03/2022 10:44
 * Description	: Extension de la class APP avec un ensemble de fonctions communes à plusieurs templates
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -11,6 +11,16 @@
 /**
 * UPDATE du 17/08/2017 : class tools extends app {
 */
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- NAMESPACES */
+
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CLASSE TOOLS */
 
 class tools {
 
@@ -20,6 +30,7 @@ class tools {
 	affichage_select_option( $row , $value , $field , $current_id = null , $current_parent = null , $level = 0 )
 	btn_confirm( $options = array() )
 	build_parents_array( array $elements , $parentId = 0 )
+	clean_tinymce_firefox( $data )
 	code_google_tag_manager()
 	code_google_tag_manager_amp()
 	config()
@@ -403,6 +414,12 @@ public function send_mail( $options = array() )
 		"msg_brut"		=> "",
 		"attachments"	=> array(),
 		"tracker"		=> "",
+		"smtp" 		=> array(
+						"host" 		=> "",
+						"port" 		=> "",
+						"user" 		=> "",
+						"password" 		=> "",
+					   ),
 		"debug"		=> false
 	);
 
@@ -416,8 +433,19 @@ public function send_mail( $options = array() )
 
 	/* ---------------------------------------------------------------------------------- */
 
-  	if( !is_null($options["to"]) AND is_file( DOC_ROOT."/lib/tools/phpmailer/PHPMailerAutoload.php" ) )
+  	if( !is_null($options["to"]) AND is_file( DOC_ROOT."/lib/tools/phpmailer/src/PHPMailer.php" ) )
   	  {
+		/* ---------------------------------------------------------------------------------- INCLUDE */
+
+		require_once( DOC_ROOT."/lib/tools/phpmailer/src/Exception.php" );
+		require_once( DOC_ROOT."/lib/tools/phpmailer/src/PHPMailer.php" );
+		require_once( DOC_ROOT."/lib/tools/phpmailer/src/SMTP.php" );
+
+		$mail = new PHPMailer;
+
+
+		/* ---------------------------------------------------------------------------------- CHECK MAIL FROM */
+
 		if( isset($options["from_email"]) AND functions::check_email($options["from_email"]) )
 		  {
 		  }
@@ -440,21 +468,34 @@ public function send_mail( $options = array() )
 		  {
 			$options["from_name"] = $this->html["config"]["email"]["from_name"];
 		  }
-
-
-		/* ---------------------------------------------------------------------------------- INCLUDE */
-	
-		require_once( DOC_ROOT."/lib/tools/phpmailer/PHPMailerAutoload.php" );
-		$mail = new PHPMailer;
 		
 		/* ---------------------------------------------------------------------------------- SMTP */
 
-		if( isset($this->html["config"]["email"]["smtp"]) AND is_array($this->html["config"]["email"]["smtp"]) )
+		if( !empty($options["smtp"]["host"]) AND !empty($options["smtp"]["user"]) AND !empty($options["smtp"]["password"]) )
+		  {
+			$mail->IsSMTP();
+			$mail->Mailer	= "smtp";
+			$mail->Host 	= $options["smtp"]["host"];
+			$mail->Port		= !empty($options["smtp"]["port"]) ?? 25;
+
+			if( $options["debug"] )
+			  {
+				$mail->SMTPDebug	= 2;
+			  }
+			$mail->SMTPSecure	= "ssl";
+			$mail->SMTPAuth 	= true;
+			$mail->Username 	= $options["smtp"]["user"];
+			$mail->Password 	= $options["smtp"]["password"];
+
+		  }
+
+		else if( isset($this->html["config"]["email"]["smtp"]) AND is_array($this->html["config"]["email"]["smtp"]) )
 		  {
 		  	if( isset($this->html["config"]["email"]["smtp"]["server"]) AND !empty($this->html["config"]["email"]["smtp"]["server"]) )
 		  	  {
 				$mail->IsSMTP();
-				$mail->Host = $this->html["config"]["email"]["smtp"]["server"];
+				$mail->Mailer 	= "smtp";
+				$mail->Host 	= $this->html["config"]["email"]["smtp"]["server"];
 		  	  }
 
 		  	if( isset($this->html["config"]["email"]["smtp"]["port"]) AND is_numeric($this->html["config"]["email"]["smtp"]["port"]) )
@@ -465,9 +506,10 @@ public function send_mail( $options = array() )
 		  	if(       isset($this->html["config"]["email"]["smtp"]["user"]) AND !empty($this->html["config"]["email"]["smtp"]["user"])
 		  		AND isset($this->html["config"]["email"]["smtp"]["password"]) )
 		  	  {
-				$mail->SMTPAuth = true;
-				$mail->Username = $this->html["config"]["email"]["smtp"]["user"];
-				$mail->Password = $this->html["config"]["email"]["smtp"]["password"];
+				$mail->SMTPSecure	= "ssl";
+				$mail->SMTPAuth 	= true;
+				$mail->Username 	= $this->html["config"]["email"]["smtp"]["user"];
+				$mail->Password 	= $this->html["config"]["email"]["smtp"]["password"];
 		  	  }
 		  }
 
@@ -488,17 +530,12 @@ public function send_mail( $options = array() )
 		  }
 
 
-		
-		/* ---------------------------------------------------------------------------------- PARAMETRES */
-	
-		if( $options["debug"] )
-		  {
-			$mail->IsSMTP();
-			$mail->Host = "localhost";
-			$mail->SMTPDebug  = 1;
-		  }
 
-		$mail->CharSet = "UTF-8";
+		/* ---------------------------------------------------------------------------------- PARAMETRES */
+		
+		$mail->CharSet 		= "UTF-8";
+		$mail->XMailer 		= " ";
+
 		$mail->setFrom( $options["from_email"], $options["from_name"] );
 		$mail->addReplyTo( $options["from_email"], $options["from_name"] );
 		$mail->Subject = $options["sujet"];
@@ -636,7 +673,7 @@ public function send_mail( $options = array() )
 			return false;
 		 }
 
-  	  }
+  	 }
 	else
 	 {
 		return false;
@@ -758,6 +795,14 @@ public function detect_adblock()
 			  }      
 		  }, 1 );";
   	  }
+  }
+
+
+
+/* --------------------------------------------------------------------------------------------------------------------------------------------- CORRECTIF POUR FIREFOX vs TINYMCE */
+public function clean_tinymce_firefox( $data )
+  {
+	return preg_replace( "#<div>(\s+|\xC2\xA0)<\/div>#u" , "" , $data );
   }
 
 

@@ -1,9 +1,9 @@
 <?php
 
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 04/11/2008
-* Last modif	: 15/10/2020 17:10
+* Last modif	: 28/03/2022 09:40
 * Description	: Fichier de config du site
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -13,8 +13,17 @@
 
 define( "DB_DATABASE", "_html" );
 define( "DB_HOST", "localhost" );
-define( "DB_USER", "user" );
-define( "DB_PASSWORD", "password" );
+
+if( $_HTML["prod"] )
+  {
+	define( "DB_USER", "user" );
+	define( "DB_PASSWORD", "password" );
+  }
+else
+  {
+	define( "DB_USER", "user" );
+	define( "DB_PASSWORD", "password" );
+  }
 
 
 /**

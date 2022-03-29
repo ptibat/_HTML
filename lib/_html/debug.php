@@ -3,7 +3,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 11/12/2008
-* Last modif	: 29/06/2021 17:22
+* Last modif	: 20/10/2021 15:01
 * Description	: Classe gestion des erreurs PHP
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -27,7 +27,7 @@ public function __construct( $options = array() )
 		"log_file"			=> DOC_ROOT."/lib/logs/debug.log",
 		"output"			=> "log",
 		"method"			=> "array",
-		"couleur"			=> "#FA0000",
+		"couleur"			=> "crimson",
 		"font"			=> "\"Helvetica Neue\",\"Helvetica\",Arial,sans-serif",
 		"font_mono"			=> "Consolas,\"Andale Mono\",\"Lucida Console\",\"Courier New\",Courier,monospace"
 	);
@@ -104,7 +104,7 @@ public function error_name( $num )
 
 
 /* --------------------------------------------------------------------------------------------------------------------------------------------- TRAITE L'ERREUR REÇUE */
-public function error( $niveau_erreur , $message , $fichier , $ligne , $env )
+public function error( $niveau_erreur="" , $message="" , $fichier="" , $ligne="" )
   {
 	$this->nb_errors++;
 
@@ -122,7 +122,7 @@ public function error( $niveau_erreur , $message , $fichier , $ligne , $env )
 	  	$msg 		= preg_replace( "#^Undefined variable: ([a-z0-9-_]+)#im" , "Undefined variable : <span style='display:inline-block;padding:0.2rem 0.4rem;background-color:".$this->options["couleur"].";color:#FFF;border-radius:0.2rem;'>$1</span>" , $msg );
 
 	  	$filename 	= basename($fichier);
-	  	$fichier 	= preg_replace( "#".$filename."$#" , "<b style='font-family:".$this->options["font"].";color:".$this->options["couleur"].";'>".$filename."</b>" , $fichier );
+	  	$fichier 	= preg_replace( "#".$filename."$#" , "<b style='font-family:".$this->options["font_mono"].";font-weight:bold;background-color:#FFDDDD;color:".$this->options["couleur"].";'>".$filename."</b>" , $fichier );
 		$error 	= "<div style='font-family:".$this->options["font_mono"].";background-color:#F0EFEF;border-left:8px solid ".$this->options["couleur"].";padding:8px;color:#000000;font-size:9pt;line-height:11pt;margin-bottom:10px;white-space:pre-wrap;'>ERREUR   : ".$msg."\nFICHIER  : ".$fichier." : <span style='display:inline-block;padding:0.2rem 0.4rem;background-color:".$this->options["couleur"].";color:#FFF;border-radius:0.2rem;'>".$ligne."</span></div>";
 
 		$this->errors[$niveau_erreur][] = $error;
@@ -225,7 +225,7 @@ public function ending( $force = false )
 		  }
 		else if( ( $force == true ) OR ( $this->options["output"] == "screen" ) )
 		  {
-			echo "<div style='background-color:#333;padding:10px;color:#FFF;font-size:20pt;text-align:left;font-family:".$this->options["font"].";margin-bottom:30px;'>DEBUG : ".$this->nb_errors." erreur".( $this->nb_errors > 1 ? "s" : "" )."</div>";
+			echo "<div style='background-color:#333;padding:10px;color:#FFF;font-size:1.4rem;text-align:left;font-family:".$this->options["font_mono"].";font-weight:bold;margin-bottom:30px;'>DEBUG : ".$this->nb_errors." erreur".( $this->nb_errors > 1 ? "s" : "" )."</div>";
 
 			foreach( $this->errors AS $level => $errors )
 			  {
@@ -239,7 +239,7 @@ public function ending( $force = false )
 			  		default :	$color = "333333"; break;
 			  	  }
 
- 				echo "<div style='background-color:".$color.";padding:10px;color:#FFF;font-size:14pt;text-align:left;font-family:".$this->options["font"].";margin-bottom:10px;'>".$this->error_name( $level )."</div>";
+ 				echo "<div style='background-color:".$color.";padding:10px;color:#FFF;font-size:1.4rem;text-align:left;font-family:".$this->options["font_mono"].";font-weight:bold;margin-bottom:10px;'>".$this->error_name( $level )."</div>";
 
 				foreach( $errors AS $error )
 				  {

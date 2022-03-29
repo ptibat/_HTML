@@ -1,7 +1,7 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
-* Contact		: @ptibat
+* Author		: @ptibat
 * Dev start		: 21/01/2013
-* Last modif	: 17/11/2017 15:05
+* Last modif	: 28/10/2021 08:36
 * Description	: Fichier de reset CSS
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
@@ -40,17 +40,17 @@ footer, header, hgroup, menu, nav, section
 
 html:-moz-full-screen
 	{
-		background :		#FFFFFF;
+		background :			#FFFFFF;
 	}
 	
 html:-webkit-full-screen
 	{
-		background :		#FFFFFF;
+		background :			#FFFFFF;
 	}
 	
 html:fullscreen
 	{
-		background :		#FFFFFF;
+		background :			#FFFFFF;
 	}
 
 
@@ -68,7 +68,7 @@ body
 html
 	{
 		font-family :			sans-serif;
-		overflow-y :				scroll;
+		overflow-y :			scroll;
 
 		-webkit-box-sizing :		border-box;
 		 -khtml-box-sizing :		border-box;
@@ -105,7 +105,8 @@ blockquote, q
 	{
 		quotes :				none;
 	}
-blockquote:before, blockquote:after,
+blockquote:before,
+blockquote:after,
 q:before, q:after
 	{
 		content :				"";
