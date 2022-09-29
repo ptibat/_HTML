@@ -1,42 +1,38 @@
 /** --------------------------------------------------------------------------------------------------------------------------------------------
 * Author		: @ptibat
 * Dev start		: 18/04/2014
-* Last modif	: 17/03/2022 11:05
+* Last modif	: 29/09/2022 12:05
 * Description	: Fichier de config CSS par defaut
 --------------------------------------------------------------------------------------------------------------------------------------------- */
 
 @charset "UTF-8";
 
-/* ------------------------------------------------------------------------------------ HTML */
+/* ------------------------------------------------------------------------------------ BODY */
+
+:root
+	{
+		font-size :				14px;
+	}
+
+
+/* ------------------------------------------------------------------------------------ BODY */
 
 body
 	{
+
+		/* ------------------------------------ Variables */
+
+		--tab_size : 			20px;
+		--space_size :			1px;
+
+		/* ------------------------------------ Default styles */
+
 		color :				#000000;
 		background-color :		#FFFFFF;
 	}
 
-	
-/* ------------------------------------------------------------------------------------ SELECTION DU TEXTE */
-
-::-moz-selection			{ color : #000000; background-color : #FFCC00; }
-::selection				{ color : #000000; background-color : #FFCC00; }
-
-
-/* ------------------------------------------------------------------------------------ PLACEHOLDER */
-
-::-webkit-input-placeholder 	{ color : #777777; }
-::-moz-placeholder 		{ color : #777777; }
-:-ms-input-placeholder 		{ color : #777777; }
-input:-moz-placeholder 		{ color : #777777; }
-
-
 /* ------------------------------------------------------------------------------------ VARIABLES */
 
-body
-	{
-		--tab_size : 			20px;
-		--space_size :			1px;
-	}
 
 [data-level="0"]	{ --level :  0; }
 [data-level="1"]	{ --level :  1; }
@@ -51,6 +47,21 @@ body
 [data-level="10"]	{ --level : 10; }
 
 
+/* ------------------------------------------------------------------------------------ SELECTION DU TEXTE */
+
+::-moz-selection			{ color : #000000; background-color : #FFCC00; }
+::selection				{ color : #000000; background-color : #FFCC00; }
+
+
+/* ------------------------------------------------------------------------------------ PLACEHOLDER */
+
+::-webkit-input-placeholder 	{ color : #777777; }
+::-moz-placeholder 		{ color : #777777; }
+:-ms-input-placeholder 		{ color : #777777; }
+input:-moz-placeholder 		{ color : #777777; }
+
+
+
 /* ------------------------------------------------------------------------------------ */
 
 body,
@@ -61,14 +72,14 @@ option,
 textarea,
 button
 	{
-		font-family :			sans-serif;
-		font-size :				14px;
+		font-family :			Sans-serif;
+		font-size :				1rem;
 		-webkit-appearance :		none;
-		-webkit-border-radius :		0; 
+		-webkit-border-radius :		0;
 		outline-width :			0;
 		outline :				none;
 	}
-	
+
 pre,
 xmp,
 blockquote,
@@ -77,8 +88,8 @@ code,
 	{
 		padding :				10px;
 		font-family :			monospace;
-		font-size :				12px;
-		color :				#0060e2;
+		font-size :				0.9rem;
+		color :				#0060E2;
 		background-color :		rgba( 0 , 0 , 0 , 0.03 );
 		border-left :			4px solid #2063AA;
 		white-space :			pre-wrap;
@@ -143,7 +154,7 @@ a.external:after
 		opacity :				0.7;
 	}
 a.external.white:after
-	{	
+	{
 		background-image :		url( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='square' stroke-linejoin='arcs'><g fill='none' fill-rule='evenodd'><path d='M18 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8c0-1.1.9-2 2-2h5M15 3h6v6M10 14L20.2 3.8'/></g></svg>" );
 	}
 
@@ -243,7 +254,7 @@ img.grayscale.disabled
 img.fullsize,
 object.fullsize,
 embed.fullsize,
-video.fullsize 
+video.fullsize
 	{
 		display :				block;
 		width : 				100%;
@@ -255,7 +266,7 @@ video.fullsize
 img.contain,
 object.contain,
 embed.contain,
-video.contain 
+video.contain
 	{
 		object-fit :			contain;
 	}
@@ -398,7 +409,7 @@ strong,
 	{
 		font-weight :			bold;
 	}
-i,	
+i,
 em,
 .italic
 	{
@@ -472,14 +483,14 @@ input.t_blue
 	{
 		color :				#0000FF;
 	}
-	
+
 .small
 	{
-		font-size :				12px;
+		font-size :				0.9rem;
 	}
 .monospaced.small
 	{
-		font-size :				11px;
+		font-size :				0.75rem;
 	}
 
 .condensed
@@ -511,20 +522,20 @@ sup,
 sub
 	{
 		position :				relative;
-		font-size :				0.7em;
-		line-height :			0.7em;
+		font-size :				0.85em;
+		line-height :			0.85em;
 		text-decoration :			none;
 	}
 
 sup
 	{
-		bottom :				1px;
+		bottom :				0.1em;
 		vertical-align :			super;
 	}
 
 sub
 	{
-		top :					1px;
+		top :					0.1em;
 		vertical-align :			sub;
 	}
 
@@ -535,7 +546,7 @@ sub
 	{
 		position :				absolute;
 	}
-	
+
 .relative
 	{
 		position :				relative;
@@ -552,11 +563,20 @@ sub
 		top :					0;
 	}
 
+.absolute.full,
+.fixed.full
+	{
+		top :					0;
+		bottom :				0;
+		left :				0;
+		right :				0;
+	}
+
 .f_left
 	{
 		float :				left;
 	}
-	
+
 .f_right
 	{
 		float :				right;
@@ -574,11 +594,12 @@ sub
 	}
 
 
+
 /* ------------------------------------------------------------------------------------ FLEXBOXES */
 
 .flex
 	{
-		
+
 		display :				-webkit-flex;
 		display :				flex;
 
@@ -674,10 +695,10 @@ sub
 		padding-bottom :			100%;
 	}
 
-.autosize iframe,  
-.autosize object,  
-.autosize embed,  
-.autosize video,  
+.autosize iframe,
+.autosize object,
+.autosize embed,
+.autosize video,
 .autosize audio
 	{
 		position :				absolute;
@@ -692,7 +713,7 @@ sub
 		unicode-bidi :			bidi-override;
 		direction :				rtl;
 	}
-	
+
 .obfuscate span
 	{
 		display :				none;
@@ -781,6 +802,13 @@ select.minimalist
 		overflow :				hidden !important;
 	}
 
+.floating_bottom
+	{
+		position :				absolute;
+		bottom :				0;
+		left :				0;
+		right :				0;
+	}
 
 /* ------------------------------------------------------------------------------------ ESPACEMENTS */
 
@@ -893,7 +921,7 @@ div.error
 		color :				#6B4E00 !important;
 		background-color :		#FFF19B !important;
 	}
-	
+
 .erreur
 	{
 		color :				#FFFFFF !important;
@@ -997,11 +1025,6 @@ a.bouton,
 		box-shadow :			0 0 2px rgba( 0 , 0 , 0, 0.2 );
 	}
 
-.bouton.disabled
-	{
-		cursor :				default !important;
-	}
-
 input.bouton,
 button.bouton
 	{
@@ -1036,7 +1059,7 @@ button.bouton
 		background-color :		#222222 !important;
 		text-decoration :			none;
 	}
-	
+
 .bouton.large
 	{
 		min-width :				200px;
@@ -1050,7 +1073,7 @@ button.bouton.large
 		padding :				2px 50px 3px 50px;
 	}
 
-	
+
 .bouton.big
 	{
 		padding :				8px 30px 10px 30px;
@@ -1074,11 +1097,28 @@ button.bouton.large
 	}
 
 .bouton.d3:active,
-.bouton.d3.active 
+.bouton.d3.active
 	{
     		box-shadow :			none;
 		transform :				translateY(0);
 	}
+
+
+
+.bouton:disabled,
+.bouton.disabled
+	{
+		cursor :				default !important;
+		color :				#555 !important;
+		background-color :		#E3E3E3 !important;
+	}
+
+
+
+
+
+
+
 
 
 /* ----------------------------------------------------------------- BTN */
@@ -1091,7 +1131,7 @@ button.bouton.large
 		padding :				4px 10px;
 		text-transform :			uppercase;
 		font-weight :			bold;
-		color :				#0000DD;  
+		color :				#0000DD;
 		background :			none !important;
 		border :				2px solid #0000DD;
 		outline :				0;
@@ -1183,7 +1223,7 @@ button.bouton.large
 /* ----------------------------------------------------------------- ROUGE : D03535 + C91D1D */
 
 .bouton.rouge,
-.tag.rouge				{ background-color : 	#DC143C; } 
+.tag.rouge				{ background-color : 	#DC143C; }
 .bouton.rouge:not(.disabled):hover,
 .bouton.rouge.current		{ background-color :	#FF0134; color : #FFFFFF; }
 .bouton.rouge,
@@ -1385,7 +1425,7 @@ button.bouton.large
 /* ----------------------------------------------------------------- gold */
 
 .bouton.gold,
-.tag.gold				{ background-color : 	#ffe500; }
+.tag.gold				{ background-color : 	#FFD700; }
 .bouton.gold:not(.disabled):hover,
 .bouton.gold.current		{ background-color :	#fcc500; color : #333; }
 .bouton.gold,
@@ -1445,7 +1485,7 @@ button.bouton2
 		border-color :			#b7b7b7;
 		text-decoration :			none;
 	}
-	
+
 .bouton2.large,
 input.bouton2.large,
 button.bouton2.large
@@ -1685,10 +1725,10 @@ select
 
 select:not([multiple])
 	{
-		padding :				2px 25px 2px 8px;
+		padding :				0.3em 1.8em 0.2em 0.5em;
 		background-image :		url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23999999'><polygon points='0,0 100,0 50,50'/></svg>");
-		background-size :			15px;
-		background-position :		calc( 100% - 5px ) 9px;
+		background-size :			1.1em;
+		background-position :		calc( 100% - 0.3em ) 0.6em;
 		background-repeat :		no-repeat;
 	}
 
@@ -1727,8 +1767,8 @@ input::-ms-clear
 	{
 		display : 				none;
 	}
-	
-	
+
+
 /* ------------------------------------------------------------------------------------ TINY MCE */
 
 body.mceContentBody
@@ -1788,7 +1828,7 @@ span.radio > label:before
 		border-width :			2px;
 		border-style :			solid;
 		border-color :			rgba( 0 , 0 , 0 , 0.3 );
-		
+
 		-webkit-transition :		all 200ms ease;
 		   -moz-transition :		all 200ms ease;
 		    -ms-transition :		all 200ms ease;
@@ -1967,22 +2007,32 @@ table.tableau.hover > tbody > tr:hover > td
 
 /* ------------------------------------------------------------------------------------ DIV AS TABLE */
 
-.table,
-.table100
+.table
 	{
 		display :				table;
 	}
 
-.table100
+.table.large
 	{
 		width :				100%;
 	}
-	
+
+.table.borders
+	{
+		border-collapse :			collapse;
+	}
+
+.table.borders .table_cell
+	{
+		border :				1px solid #CCCCCC;
+	}
+
+
 .table_row
 	{
 		display :				table-row;
 	}
-	
+
 .table_cell
 	{
 		display :				table-cell;
@@ -2076,7 +2126,7 @@ table.tableau.hover > tbody > tr:hover > td
 .colonnes6			{ column-count : 6; }
 
 
-[class*="colonnes"] > .colonne 
+[class*="colonnes"] > .colonne
 	{
 		break-inside :			avoid-column;
 	}
@@ -2181,7 +2231,7 @@ table.tableau.hover > tbody > tr:hover > td
 
 
 
-/* ------------------------------------------------------------------------------------ REDUCITON DES ANIMATIONS */
+/* ------------------------------------------------------------------------------------ REDUCTION DES ANIMATIONS */
 
 @media ( prefers-reduced-motion : reduce )
 	{
